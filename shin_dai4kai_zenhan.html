@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第4回（前半）：実装の基本とプロジェクト設計</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Yu Gothic', 'Meiryo', sans-serif; background: linear-gradient(135deg, #27ae60 0%, #2980b9 100%); overflow: hidden; height: 100vh; }
+        .slide-container { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px; }
+        .slide { display: none; background: white; border-radius: 20px; padding: 50px; max-width: 1100px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideIn 0.4s ease-out; }
+        .slide.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 2.3em; color: #2c3e50; margin-bottom: 15px; text-align: center; }
+        h2 { font-size: 1.8em; color: #27ae60; margin-bottom: 25px; border-bottom: 3px solid #27ae60; padding-bottom: 12px; }
+        h3 { font-size: 1.4em; color: #2980b9; margin: 20px 0 12px 0; }
+        h4 { font-size: 1.15em; color: #2c3e50; margin: 15px 0 8px 0; }
+        p, li { font-size: 1.05em; line-height: 1.7; color: #34495e; margin-bottom: 12px; }
+        ul, ol { margin-left: 25px; }
+        .subtitle { font-size: 1.2em; color: #7f8c8d; text-align: center; margin-bottom: 10px; }
+        .author { text-align: center; color: #7f8c8d; font-size: 1.05em; margin-top: 25px; }
+        .box { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 18px 0; border-left: 5px solid #27ae60; }
+        .highlight { background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%); padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+        .emphasis { color: #e74c3c; font-weight: bold; }
+        .code { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.95em; margin: 15px 0; overflow-x: auto; }
+        .formula { background: #ecf0f1; padding: 18px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 1.15em; text-align: center; margin: 18px 0; }
+        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin: 18px 0; }
+        .three-columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin: 18px 0; }
+        .navigation { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; gap: 18px; z-index: 1000; }
+        .nav-button { background: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 1.05em; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: all 0.3s; }
+        .nav-button:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(0,0,0,0.3); }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-number { position: fixed; bottom: 18px; right: 18px; background: white; padding: 8px 16px; border-radius: 15px; font-weight: bold; color: #2c3e50; box-shadow: 0 3px 10px rgba(0,0,0,0.2); z-index: 1001; }
+        .card { background: white; border-radius: 8px; padding: 18px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); border-top: 4px solid #27ae60; text-align: center; }
+        @media (max-width: 768px) { .slide { padding: 25px; } h1 { font-size: 1.8em; } h2 { font-size: 1.4em; } .two-columns, .three-columns { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    
+    <div class="slide-number"><span id="currentSlide">1</span> / 26</div>
+    
+    <div class="slide-container">
+        
+        <!-- スライド1: タイトル -->
+        <div style="position: fixed; top: 20px; left: 20px; z-index: 1002;"><a href="index.html" style="background: white; color: #667eea; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2); display: inline-block;">← 目次に戻る</a></div>
+        <div class="slide active">
+            <h1>第4回：実装の基本とプロジェクト設計</h1>
+            <div class="subtitle">理論から実装へ - Python実装とプロジェクト設計（前半）</div>
+            <div style="text-align: center; margin: 50px 0;">
+                <div style="font-size: 4em; color: #27ae60;">💻</div>
+                <p style="font-size: 2em; color: #27ae60; font-weight: bold; margin-top: 20px;">実装</p>
+                <p style="font-size: 1.2em; color: #7f8c8d; margin-top: 10px;">理論をコードに変換する</p>
+            </div>
+            <div class="author">
+                <p><strong>講師：</strong>片山 立（Ryu Katayama, Ph.D.）</p>
+                <p>夢・アーキテクティング工房 | 公共貨幣フォーラム 理事</p>
+                <p>2026年1月</p>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.1em; color: #2980b9; font-weight: bold;">
+                今日は「手を動かす」回です
+            </p>
+        </div>
+        
+        <!-- スライド2: これまでの復習と今日のゴール -->
+        <div class="slide">
+            <h2>📚 これまでの復習と今日のゴール</h2>
+            <div class="box">
+                <h3>これまでの3回</h3>
+                <ol>
+                    <li><strong>第1回</strong>：情報幾何学の基礎（多様体・Fisher計量・測地線）</li>
+                    <li><strong>第2回</strong>：発散段階の数理（エントロピー最大化）</li>
+                    <li><strong>第3回</strong>：収束・結晶化・3理論の統合（自然勾配・相転移・統一方程式）</li>
+                </ol>
+            </div>
+            <div class="box" style="border-left-color: #2980b9;">
+                <h3>今日のゴール</h3>
+                <ol>
+                    <li>Python環境のセットアップ</li>
+                    <li>Fisher計量の計算を実装</li>
+                    <li>自然勾配降下法を実装</li>
+                    <li>統一方程式をシミュレーション</li>
+                    <li>自分のプロジェクトを設計</li>
+                </ol>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.15em; color: #27ae60; font-weight: bold;">
+                理論を学んだ → 今日は実装！
+            </p>
+        </div>
+        
+        <!-- スライド3: 必要なライブラリ -->
+        <div class="slide">
+            <h2>📦 必要なライブラリ</h2>
+            <div class="box">
+                <h3>Python 3.8以上</h3>
+            </div>
+            <div class="box" style="border-left-color: #2980b9;">
+                <h3>必須ライブラリ</h3>
+                <ul>
+                    <li><strong>numpy</strong>：数値計算</li>
+                    <li><strong>scipy</strong>：科学計算</li>
+                    <li><strong>matplotlib</strong>：可視化</li>
+                    <li><strong>jupyter</strong>：ノートブック環境</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #e74c3c;">
+                <h3>オプショナル</h3>
+                <ul>
+                    <li><strong>torch（PyTorch）</strong>：ニューラルネットワーク</li>
+                    <li><strong>autograd</strong>：自動微分</li>
+                </ul>
+            </div>
+            <div class="box" style="background: #2c3e50; color: white; border: none;">
+                <h4 style="color: white;">インストールコマンド</h4>
+                <div class="code">
+pip install numpy scipy matplotlib jupyter
+pip install torch  # オプション
+pip install autograd  # オプション
+                </div>
+            </div>
+        </div>
+        
+        <!-- スライド4: Jupyter Notebookの起動 -->
+        <div class="slide">
+            <h2>🚀 Jupyter Notebookの起動</h2>
+            <div class="box">
+                <h3>起動方法</h3>
+                <div class="code">
+jupyter notebook
+                </div>
+            </div>
+            <div class="box" style="border-left-color: #2980b9;">
+                <h3>ブラウザで開く</h3>
+                <p style="text-align: center; font-size: 1.1em; margin: 15px 0;">
+                    http://localhost:8888
+                </p>
+            </div>
+            <div class="box" style="border-left-color: #27ae60;">
+                <h3>新しいノートブックを作成</h3>
+                <p style="text-align: center; font-size: 1.1em; margin: 15px 0;">
+                    New → Python 3
+                </p>
+            </div>
+            <p style="text-align: center; margin-top: 30px; font-size: 1.15em; color: #2980b9;">
+                実際に起動してみましょう！
+            </p>
+        </div>
+        
+        <!-- スライド5: 基本的なインポート -->
+        <div class="slide">
+            <h2>📝 基本的なインポート</h2>
+            <div class="box">
+                <h3>コード例</h3>
+                <div class="code">
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import norm
+from scipy.optimize import minimize
+
+# 動作確認
+print("NumPy version:", np.__version__)
+print("Setup complete!")
+
+# 簡単なテスト
+x = np.linspace(-3, 3, 100)
+y = norm.pdf(x, 0, 1)
+plt.plot(x, y)
+plt.title("Normal Distribution")
+plt.show()
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.15em; color: #27ae60; font-weight: bold;">
+                全員実行してください。グラフが表示されればOK！
+            </p>
+        </div>
+        
+        <!-- スライド6: Fisher情報行列の復習 -->
+        <div class="slide">
+            <h2>📐 Fisher情報行列の復習</h2>
+            <div class="box">
+                <h3>定義</h3>
+                <div class="formula">
+                    I(θ) = E[(∂log p/∂θ)(∂log p/∂θ)ᵀ]
+                </div>
+            </div>
+            <div class="box" style="border-left-color: #2980b9;">
+                <h3>正規分布N(μ, σ²)の例</h3>
+                <div class="formula">
+I(μ, σ) = [1/σ²    0   ]<br>
+          [0      2/σ²]
+                </div>
+            </div>
+            <div class="box" style="background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%); color: #2c3e50; border: none;">
+                <h3>今日やること</h3>
+                <p style="font-size: 1.2em; text-align: center; margin-top: 10px;">
+                    これをPythonで実装！
+                </p>
+            </div>
+        </div>
+        
+        <!-- スライド7: 正規分布のFisher情報行列（実装1） -->
+        <div class="slide">
+            <h2>💻 正規分布のFisher情報行列（実装1）</h2>
+            <div class="box">
+                <h3>実装コード</h3>
+                <div class="code">
+def fisher_information_normal(mu, sigma):
+    """
+    正規分布N(mu, sigma^2)のFisher情報行列を計算
+    """
+    I = np.array([
+        [1 / sigma**2, 0],
+        [0, 2 / sigma**2]
+    ])
+    return I
+
+# テスト
+mu, sigma = 0, 1
+I = fisher_information_normal(mu, sigma)
+print("Fisher Information Matrix:")
+print(I)
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.15em; color: #27ae60;">
+                コードを入力して実行してみましょう
+            </p>
+        </div>
+        
+        <!-- スライド8: Fisher情報行列の可視化 -->
+        <div class="slide">
+            <h2>📊 Fisher情報行列の可視化</h2>
+            <div class="box">
+                <h3>σを変化させたときの変化</h3>
+                <div class="code">
+sigmas = np.linspace(0.5, 3, 50)
+I_mu_mu = 1 / sigmas**2
+I_sigma_sigma = 2 / sigmas**2
+
+plt.figure(figsize=(10, 4))
+plt.subplot(1, 2, 1)
+plt.plot(sigmas, I_mu_mu, label='I_μμ = 1/σ²')
+plt.xlabel('σ')
+plt.ylabel('Fisher Information')
+plt.legend()
+plt.title('Fisher Information for μ')
+
+plt.subplot(1, 2, 2)
+plt.plot(sigmas, I_sigma_sigma, label='I_σσ = 2/σ²')
+plt.xlabel('σ')
+plt.ylabel('Fisher Information')
+plt.legend()
+plt.title('Fisher Information for σ')
+plt.tight_layout()
+plt.show()
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 20px; font-size: 1.1em; color: #2980b9;">
+                σが小さいとFisher情報が大きい → パラメータ推定がしやすい
+            </p>
+        </div>
+        
+        <!-- スライド9: 一般的なFisher情報行列の計算 -->
+        <div class="slide">
+            <h2>🔧 一般的なFisher情報行列の計算</h2>
+            <div class="box">
+                <h3>数値微分を使った実装</h3>
+                <div class="code" style="font-size: 0.85em;">
+def fisher_information_numerical(log_prob_func, theta, 
+                                  n_samples=1000):
+    """数値微分でFisher情報行列を計算"""
+    d = len(theta)
+    I = np.zeros((d, d))
+    
+    # サンプル生成
+    samples = np.random.normal(theta[0], theta[1], n_samples)
+    
+    # スコア関数の計算（数値微分）
+    epsilon = 1e-5
+    scores = np.zeros((n_samples, d))
+    
+    for i in range(d):
+        theta_plus = theta.copy()
+        theta_minus = theta.copy()
+        theta_plus[i] += epsilon
+        theta_minus[i] -= epsilon
+        
+        log_p_plus = log_prob_func(samples, theta_plus)
+        log_p_minus = log_prob_func(samples, theta_minus)
+        
+        scores[:, i] = (log_p_plus - log_p_minus) / (2*epsilon)
+    
+    # Fisher情報行列 = スコアの外積の期待値
+    I = scores.T @ scores / n_samples
+    return I
+                </div>
+            </div>
+        </div>
+        
+        <!-- スライド10: Fisher-Rao距離の計算 -->
+        <div class="slide">
+            <h2>📏 Fisher-Rao距離の計算</h2>
+            <div class="box">
+                <h3>実装</h3>
+                <div class="code" style="font-size: 0.85em;">
+def fisher_rao_distance(theta1, theta2, fisher_func):
+    """Fisher-Rao距離の近似計算"""
+    n_steps = 100
+    path = np.linspace(0, 1, n_steps)
+    
+    distance = 0
+    for i in range(n_steps - 1):
+        t = path[i]
+        theta = (1 - t) * theta1 + t * theta2
+        
+        # Fisher計量
+        G = fisher_func(theta[0], theta[1])
+        
+        # 速度ベクトル
+        v = theta2 - theta1
+        
+        # 長さの要素
+        ds = np.sqrt(v @ G @ v) / n_steps
+        distance += ds
+    
+    return distance
+
+# テスト
+theta1 = np.array([0, 1])
+theta2 = np.array([1, 2])
+d = fisher_rao_distance(theta1, theta2, 
+                         fisher_information_normal)
+print(f"Fisher-Rao distance: {d:.4f}")
+                </div>
+            </div>
+        </div>
+        
+        <!-- スライド11: Fisher計量の実装まとめ -->
+        <div class="slide">
+            <h2>✅ Fisher計量の実装まとめ</h2>
+            <div class="box">
+                <h3>学んだこと</h3>
+                <ol>
+                    <li>Fisher情報行列の実装</li>
+                    <li>可視化</li>
+                    <li>数値微分を使った一般的な計算</li>
+                    <li>Fisher-Rao距離の計算</li>
+                </ol>
+            </div>
+            <div class="box" style="background: linear-gradient(120deg, #27ae60 0%, #2980b9 100%); color: white; border: none;">
+                <h3 style="color: white;">次：自然勾配降下法</h3>
+                <p style="font-size: 1.1em; text-align: center; margin-top: 10px; color: white;">
+                    Fisher計量を使った最適化を実装
+                </p>
+            </div>
+        </div>
+        
+        <!-- スライド12: 自然勾配の復習 -->
+        <div class="slide">
+            <h2>🎯 自然勾配の復習</h2>
+            <div class="two-columns">
+                <div class="box">
+                    <h4>通常の勾配降下法</h4>
+                    <div class="formula">
+                        θ<sub>t+1</sub> = θ<sub>t</sub> - η ∇L(θ<sub>t</sub>)
+                    </div>
+                </div>
+                <div class="box" style="border-left-color: #2980b9;">
+                    <h4>自然勾配降下法</h4>
+                    <div class="formula">
+                        θ<sub>t+1</sub> = θ<sub>t</sub> - η G<sup>-1</sup> ∇L(θ<sub>t</sub>)
+                    </div>
+                </div>
+            </div>
+            <div class="box" style="margin-top: 20px;">
+                <h3>違い</h3>
+                <ul>
+                    <li><strong>通常の勾配</strong>：地図上の直線</li>
+                    <li><strong>自然勾配</strong>：実際の地形での最短経路（測地線）</li>
+                </ul>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.15em; color: #27ae60; font-weight: bold;">
+                これから実装します
+            </p>
+        </div>
+        
+        <!-- スライド13: 目的関数の設定 -->
+        <div class="slide">
+            <h2>📋 目的関数の設定</h2>
+            <div class="box">
+                <h3>例題：正規分布のパラメータ推定</h3>
+                <ul>
+                    <li><strong>データ</strong>：真の分布 N(2, 1.5²) から生成</li>
+                    <li><strong>目的</strong>：データから μ, σ を推定</li>
+                    <li><strong>損失関数</strong>：負の対数尤度</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #2980b9;">
+                <h3>実装</h3>
+                <div class="code" style="font-size: 0.9em;">
+# データ生成
+np.random.seed(42)
+true_mu, true_sigma = 2.0, 1.5
+data = np.random.normal(true_mu, true_sigma, 100)
+
+def neg_log_likelihood(theta, data):
+    """負の対数尤度"""
+    mu, sigma = theta
+    n = len(data)
+    return n*np.log(sigma) + np.sum((data-mu)**2)/(2*sigma**2)
+
+def gradient_nll(theta, data):
+    """負の対数尤度の勾配"""
+    mu, sigma = theta
+    n = len(data)
+    grad_mu = -np.sum(data - mu) / sigma**2
+    grad_sigma = n/sigma - np.sum((data-mu)**2)/sigma**3
+    return np.array([grad_mu, grad_sigma])
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.2em; color: #2980b9; font-weight: bold;">
+                → 第4回（後半）へ続く
+            </p>
+        </div>
+        
+    </div>
+    
+    <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1002; display: flex; gap: 15px;">
+        <a href="shin_dai3kai_kouhan.html" style="background: white; color: #2c3e50; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">← 前</a>
+        <a href="index.html" style="background: #667eea; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">目次</a>
+        <a href="shin_dai4kai_kouhan.html" style="background: white; color: #2c3e50; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">次 →</a>
+    </div>
+    
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← 前へ</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">次へ →</button>
+    </div>
+    
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('totalSlides').textContent = 26;
+        
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlide + 1;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+        
+        function changeSlide(dir) { showSlide(currentSlide + dir); }
+        document.addEventListener('keydown', e => { if(e.key==='ArrowLeft') changeSlide(-1); if(e.key==='ArrowRight') changeSlide(1); });
+        
+        showSlide(0);
+    </script>
+</body>
+</html>

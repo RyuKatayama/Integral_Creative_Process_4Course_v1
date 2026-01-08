@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第3回（後半）：創造過程の収束と結晶化</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Yu Gothic', 'Meiryo', sans-serif; background: linear-gradient(135deg, #17a2b8 0%, #667eea 100%); overflow: hidden; height: 100vh; }
+        .slide-container { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px; }
+        .slide { display: none; background: white; border-radius: 20px; padding: 50px; max-width: 1100px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideIn 0.4s ease-out; }
+        .slide.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 2.3em; color: #2c3e50; margin-bottom: 15px; text-align: center; }
+        h2 { font-size: 1.8em; color: #17a2b8; margin-bottom: 25px; border-bottom: 3px solid #17a2b8; padding-bottom: 12px; }
+        h3 { font-size: 1.4em; color: #667eea; margin: 20px 0 12px 0; }
+        h4 { font-size: 1.15em; color: #2c3e50; margin: 15px 0 8px 0; }
+        p, li { font-size: 1.05em; line-height: 1.7; color: #34495e; margin-bottom: 12px; }
+        ul, ol { margin-left: 25px; }
+        .subtitle { font-size: 1.2em; color: #7f8c8d; text-align: center; margin-bottom: 10px; }
+        .author { text-align: center; color: #7f8c8d; font-size: 1.05em; margin-top: 25px; }
+        .box { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 18px 0; border-left: 5px solid #17a2b8; }
+        .highlight { background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%); padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+        .emphasis { color: #e74c3c; font-weight: bold; }
+        .formula { background: #ecf0f1; padding: 18px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 1.15em; text-align: center; margin: 18px 0; }
+        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin: 18px 0; }
+        .three-columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin: 18px 0; }
+        .navigation { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; gap: 18px; z-index: 1000; }
+        .nav-button { background: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 1.05em; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: all 0.3s; }
+        .nav-button:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(0,0,0,0.3); }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-number { position: fixed; bottom: 18px; right: 18px; background: white; padding: 8px 16px; border-radius: 15px; font-weight: bold; color: #2c3e50; box-shadow: 0 3px 10px rgba(0,0,0,0.2); z-index: 1001; }
+        .card { background: white; border-radius: 8px; padding: 18px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); border-top: 4px solid #17a2b8; text-align: center; }
+        @media (max-width: 768px) { .slide { padding: 25px; } h1 { font-size: 1.8em; } h2 { font-size: 1.4em; } .two-columns, .three-columns { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    
+    <div class="slide-number"><span id="currentSlide">13</span> / 24</div>
+    
+    <div class="slide-container">
+        
+        <!-- スライド13: 結晶化段階の数理化（1） -->
+        <div style="position: fixed; top: 20px; left: 20px; z-index: 1002;"><a href="index.html" style="background: white; color: #667eea; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2); display: inline-block;">← 目次に戻る</a></div>
+        <div class="slide active">
+            <h2>💎 結晶化段階の数理化（1）- 基本アイデア</h2>
+            <div class="box" style="background: linear-gradient(120deg, #17a2b8 0%, #667eea 100%); color: white; border: none;">
+                <h3 style="color: white;">問い</h3>
+                <p style="font-size: 1.3em; text-align: center; margin: 15px 0; color: white;">
+                    突然のひらめきを数式でどう表現するか？
+                </p>
+            </div>
+            <div class="box">
+                <h3>直感</h3>
+                <p style="font-size: 1.2em; text-align: center; margin: 15px 0;">
+                    「<span class="highlight">質的な変化</span>」「<span class="highlight">飛躍</span>」
+                </p>
+            </div>
+            <div class="box" style="border-left-color: #667eea;">
+                <h3>数学的定式化</h3>
+                <p style="font-size: 1.3em; text-align: center; margin: 15px 0; font-weight: bold;">
+                    相転移現象
+                </p>
+            </div>
+            <div class="box" style="border-left-color: #e74c3c;">
+                <h3>物理学のアナロジー</h3>
+                <ul>
+                    <li>水が氷になる（液体→固体）💧 → 🧊</li>
+                    <li>磁石の磁化（無秩序→秩序）🧲</li>
+                    <li>対称性の破れ</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- スライド14: 自由エネルギー -->
+        <div class="slide">
+            <h2>⚡ 結晶化段階の数理化（2）- 自由エネルギー</h2>
+            <div class="box">
+                <h3>自由エネルギー</h3>
+                <div class="formula">
+                    F = U - TS
+                </div>
+                <ul>
+                    <li>U = 内部エネルギー</li>
+                    <li>T = 温度</li>
+                    <li>S = エントロピー</li>
+                </ul>
+            </div>
+            <div class="two-columns">
+                <div class="box" style="border-left-color: #e74c3c;">
+                    <h4>高温（T大）</h4>
+                    <p>エントロピー項が支配</p>
+                    <p style="text-align: center; margin-top: 10px;">→ <span class="emphasis">発散</span></p>
+                </div>
+                <div class="box" style="border-left-color: #17a2b8;">
+                    <h4>低温（T小）</h4>
+                    <p>エネルギー項が支配</p>
+                    <p style="text-align: center; margin-top: 10px;">→ <span class="emphasis">収束</span></p>
+                </div>
+            </div>
+            <div class="box" style="background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%); color: #2c3e50; border: none;">
+                <h3>相転移</h3>
+                <p style="font-size: 1.15em; text-align: center; margin-top: 10px;">
+                    Fが極小値から別の極小値へジャンプ<br>
+                    <span class="emphasis">臨界点</span>で突然の変化 → 結晶化
+                </p>
+            </div>
+        </div>
+        
+        <!-- スライド15: βパラメータと相転移 -->
+        <div class="slide">
+            <h2>🌡️ βパラメータと相転移</h2>
+            <div class="box">
+                <h3>β = 1/T（逆温度）</h3>
+            </div>
+            <div class="three-columns">
+                <div class="card" style="border-top-color: #667eea;">
+                    <h4>β → 0（高温）</h4>
+                    <p style="font-size: 2em; margin: 15px 0;">🔥</p>
+                    <p style="font-weight: bold; color: #667eea;">発散段階</p>
+                </div>
+                <div class="card" style="border-top-color: #f39c12;">
+                    <h4>β = 中程度</h4>
+                    <p style="font-size: 2em; margin: 15px 0;">🌤️</p>
+                    <p style="font-weight: bold; color: #f39c12;">収束段階</p>
+                </div>
+                <div class="card" style="border-top-color: #17a2b8;">
+                    <h4>β → ∞（低温）</h4>
+                    <p style="font-size: 2em; margin: 15px 0;">❄️</p>
+                    <p style="font-weight: bold; color: #17a2b8;">結晶化段階</p>
+                </div>
+            </div>
+            <div class="box" style="background: linear-gradient(120deg, #17a2b8 0%, #667eea 100%); color: white; border: none; margin-top: 20px;">
+                <h3 style="color: white;">統一方程式での意味</h3>
+                <p style="font-size: 1.2em; text-align: center; margin-top: 10px; color: white;">
+                    βを連続的に変化させることで3段階を制御<br>
+                    βは「創造のダイナミクス」を制御するマスターパラメータ
+                </p>
+            </div>
+        </div>
+        
+        <!-- スライド16: 対称性の破れ -->
+        <div class="slide">
+            <h2>🔄 対称性の破れ</h2>
+            <div class="box">
+                <h3>対称性とは</h3>
+                <p style="text-align: center; font-size: 1.15em;">系が持つ不変性</p>
+            </div>
+            <div class="box" style="border-left-color: #667eea;">
+                <h3>対称性の破れとは</h3>
+                <p style="text-align: center; font-size: 1.15em;">対称性が失われる現象</p>
+            </div>
+            <div class="box" style="border-left-color: #e74c3c;">
+                <h3>例</h3>
+                <ul>
+                    <li><strong>磁石</strong>：すべての方向が等価（対称）→ 一つの方向に磁化（対称性の破れ）</li>
+                    <li><strong>創造過程</strong>：すべての可能性が等価 → 一つの解決策を選択</li>
+                </ul>
+            </div>
+            <div style="text-align: center; margin: 30px 0;">
+                <p style="font-size: 2em;">⭕ → ⬆️</p>
+                <p style="font-size: 1.1em; color: #17a2b8; margin-top: 15px;">
+                    対称な状態 → 対称性が破れた状態
+                </p>
+            </div>
+            <div class="box" style="background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%); color: #2c3e50; border: none;">
+                <h3>結晶化 = 対称性の自発的破れ</h3>
+                <p style="font-size: 1.15em; text-align: center; margin-top: 10px;">
+                    「選択」が創造の本質
+                </p>
+            </div>
+        </div>
+        
+        <!-- スライド17: 結晶化段階と脳科学 -->
+        <div class="slide">
+            <h2>🧠 結晶化段階と脳科学</h2>
+            <div class="box">
+                <h3>γ波（ガンマ波）</h3>
+                <ul>
+                    <li>周波数：30-100 Hz</li>
+                    <li>創造的ひらめきとの関連</li>
+                    <li>脳の広範囲な同期</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #667eea;">
+                <h3>Whole Brain Architecture（WBA）</h3>
+                <ul>
+                    <li>脳全体のアーキテクチャを模倣</li>
+                    <li>結晶化段階 = 大域的な同期状態</li>
+                    <li>山川宏先生：WBAの提唱者</li>
+                </ul>
+            </div>
+            <div style="text-align: center; margin: 30px 0;">
+                <p style="font-size: 3em;">🧠</p>
+                <p style="font-size: 1.1em; color: #17a2b8; margin-top: 15px;">
+                    脳全体の同期 = 創造的ひらめき
+                </p>
+            </div>
+            <p style="text-align: center; margin-top: 20px; font-size: 1.15em; color: #667eea;">
+                結晶化は脳科学的にも裏付けられる
+            </p>
+        </div>
+        
+        <!-- スライド18: 結晶化段階の実例 -->
+        <div class="slide">
+            <h2>💡 結晶化段階の実例</h2>
+            <div class="box">
+                <h3>歴史的な例</h3>
+                <ul>
+                    <li>アルキメデスの「エウレカ！」（浮力の発見）</li>
+                    <li>ケクレのベンゼン環（夢の中でのひらめき）</li>
+                    <li>ポアンカレの数学的発見</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #667eea;">
+                <h3>KJ法での例</h3>
+                <ul>
+                    <li>表札作り（グループ全体を一言で表す）</li>
+                    <li>統合された理解の創発</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #e74c3c;">
+                <h3>特徴</h3>
+                <ul>
+                    <li><span class="emphasis">突然性</span></li>
+                    <li><span class="emphasis">不可逆性</span></li>
+                    <li><span class="emphasis">新しい構造の創発</span></li>
+                </ul>
+            </div>
+            <p style="text-align: center; margin-top: 30px; font-size: 1.2em; color: #17a2b8;">
+                結晶化は誰でも経験する。でも、意図的に起こすのは難しい。
+            </p>
+        </div>
+        
+        <!-- スライド19: 3段階の統合（予告） -->
+        <div class="slide">
+            <h2>🔗 3段階の統合（予告）</h2>
+            <div class="box">
+                <h3>ここまでのまとめ</h3>
+                <div class="three-columns">
+                    <div style="text-align: center; padding: 15px; background: #667eea; color: white; border-radius: 8px;">
+                        <p style="font-size: 1.2em; margin-bottom: 8px; color: white;">発散</p>
+                        <p style="font-size: 0.9em; color: white;">エントロピー最大化</p>
+                        <p style="font-size: 0.9em; color: white;">β小</p>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #f39c12; color: white; border-radius: 8px;">
+                        <p style="font-size: 1.2em; margin-bottom: 8px; color: white;">収束</p>
+                        <p style="font-size: 0.9em; color: white;">自然勾配降下法</p>
+                        <p style="font-size: 0.9em; color: white;">β中</p>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #17a2b8; color: white; border-radius: 8px;">
+                        <p style="font-size: 1.2em; margin-bottom: 8px; color: white;">結晶化</p>
+                        <p style="font-size: 0.9em; color: white;">相転移</p>
+                        <p style="font-size: 0.9em; color: white;">β大</p>
+                    </div>
+                </div>
+            </div>
+            <div class="box" style="background: linear-gradient(120deg, #667eea 0%, #764ba2 100%); color: white; border: none; margin-top: 20px;">
+                <h3 style="color: white;">次：統一方程式</h3>
+                <p style="font-size: 1.2em; text-align: center; margin-top: 15px; color: white;">
+                    これら3段階を1つの方程式で記述<br>
+                    驚くべき発見：FEP・WBA・Creative Processも同じ方程式！
+                </p>
+            </div>
+        </div>
+        
+        <!-- スライド20: 3理論の紹介 -->
+        <div class="slide">
+            <h2>🔬 3理論の紹介</h2>
+            <div class="box" style="border-left-color: #667eea;">
+                <h3>Free Energy Principle (FEP)</h3>
+                <p><strong>Karl Friston</strong></p>
+                <ul>
+                    <li>脳は自由エネルギーを最小化</li>
+                    <li>予測誤差の最小化</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #f39c12;">
+                <h3>Whole Brain Architecture (WBA)</h3>
+                <p><strong>山川宏</strong></p>
+                <ul>
+                    <li>脳全体のアーキテクチャを工学的に実装</li>
+                    <li>モジュール間の相互作用</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #17a2b8;">
+                <h3>Creative Process</h3>
+                <p><strong>國藤進 → 立さんの定式化</strong></p>
+                <ul>
+                    <li>発散・収束・結晶化の3段階</li>
+                </ul>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.2em; color: #667eea; font-weight: bold;">
+                3つの異なる分野の理論。でも、数学的に統一できる！
+            </p>
+        </div>
+        
+        <!-- スライド21: 統一方程式 -->
+        <div class="slide">
+            <h2>✨ 統一方程式</h2>
+            <div class="box" style="background: linear-gradient(120deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                <h3 style="color: white;">統一方程式</h3>
+                <div class="formula" style="background: white; color: #2c3e50;">
+                    dθ/dt = -G<sup>-1</sup>(θ) ∇L(θ) + √(2/β) η(t)
+                </div>
+                <ul style="color: white;">
+                    <li><strong>第1項</strong>：収束（自然勾配降下）= 決定論的項</li>
+                    <li><strong>第2項</strong>：発散（ランダム探索）= 確率論的項</li>
+                    <li><strong>G</strong> = Fisher情報行列</li>
+                    <li><strong>β</strong> = 逆温度</li>
+                </ul>
+            </div>
+            <div class="box">
+                <h3>3段階との対応</h3>
+                <ul>
+                    <li><strong>β小（高温）</strong>：第2項が支配的 → <span class="emphasis">発散段階</span></li>
+                    <li><strong>β中（中温）</strong>：両項が拮抗 → <span class="emphasis">収束段階</span></li>
+                    <li><strong>β→∞（低温）</strong>：第1項が支配的、相転移 → <span class="emphasis">結晶化段階</span></li>
+                </ul>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.3em; color: #667eea; font-weight: bold;">
+                1つの方程式で3段階＋3理論を記述！
+            </p>
+        </div>
+        
+        <!-- スライド22: 3理論の数学的等価性 -->
+        <div class="slide">
+            <h2>🔗 3理論の数学的等価性</h2>
+            <div class="box" style="background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%); color: #2c3e50; border: none;">
+                <h3>驚くべき発見</h3>
+                <p style="font-size: 1.2em; text-align: center; margin-top: 10px;">
+                    3理論はすべて同じ数学的構造を持つ
+                </p>
+            </div>
+            <div class="box">
+                <h3>共通構造</h3>
+                <ul>
+                    <li>状態空間 = 確率分布の多様体 M</li>
+                    <li>計量 = Fisher情報計量 G</li>
+                    <li>ダイナミクス = 統一方程式</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #667eea;">
+                <h3>意味</h3>
+                <ul>
+                    <li><strong>FEP</strong> = 脳の予測誤差最小化</li>
+                    <li><strong>WBA</strong> = 脳全体の協調動作</li>
+                    <li><strong>Creative Process</strong> = 創造の3段階</li>
+                </ul>
+                <p style="text-align: center; margin-top: 15px; font-size: 1.1em;">
+                    すべて「自然勾配 on 多様体」で記述できる
+                </p>
+            </div>
+            <p style="text-align: center; margin-top: 20px; font-size: 1.2em; color: #667eea; font-weight: bold;">
+                立さんの研究の核心：異分野の統合
+            </p>
+        </div>
+        
+        <!-- スライド23: M⁶⁵理論への接続 -->
+        <div class="slide">
+            <h2>🌐 M⁶⁵理論への接続</h2>
+            <div class="box">
+                <h3>M⁶⁵統合メタ理論</h3>
+                <p><strong>4つの理論を圏論で統合：</strong></p>
+                <ul>
+                    <li>IEEE 42010（システムアーキテクチャ）</li>
+                    <li>構造構成主義</li>
+                    <li>批判的実在論</li>
+                    <li>インテグラル理論</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #667eea;">
+                <h3>構造</h3>
+                <ul>
+                    <li><strong>6要素認識プロセス</strong>（動的構造）</li>
+                    <li><strong>5要素存在構造</strong>（静的構造）</li>
+                    <li><strong>30次元統合空間</strong>（6×5=30次元）</li>
+                    <li>圏論による構造的同型性アプローチ</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #17a2b8;">
+                <h3>今日学んだ内容の位置づけ</h3>
+                <ul>
+                    <li>情報幾何学は創造過程の数理化の基盤</li>
+                    <li>M⁶⁵理論の中で創造プロセスを扱う軸の一つ</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- スライド24: 今日のまとめと次回予告 -->
+        <div class="slide">
+            <h2>📚 今日のまとめと次回予告</h2>
+            <div class="box">
+                <h3>学んだこと</h3>
+                <ol>
+                    <li><strong>収束段階</strong>：自然勾配降下法（測地線探索）</li>
+                    <li><strong>結晶化段階</strong>：相転移現象（対称性の破れ）</li>
+                    <li><strong>3理論の統合</strong>：FEP・WBA・Creative Process</li>
+                    <li><strong>統一方程式</strong>：dθ/dt = -G⁻¹∇L + √(2/β)η</li>
+                    <li><strong>M⁶⁵理論</strong>への接続</li>
+                </ol>
+            </div>
+            <div class="box" style="border-left-color: #e74c3c;">
+                <h3>次回（第4回）のテーマ</h3>
+                <p class="emphasis">「実装の基本とプロジェクト設計」</p>
+                <ul>
+                    <li>Python環境のセットアップ</li>
+                    <li>Fisher計量の計算実装</li>
+                    <li>自然勾配降下法の実装</li>
+                    <li>統一方程式のシミュレーション</li>
+                    <li>個人プロジェクト設計</li>
+                </ul>
+            </div>
+            <div style="text-align: center; margin-top: 40px;">
+                <h2 style="color: #17a2b8;">お疲れ様でした！</h2>
+                <p style="font-size: 1.2em; margin-top: 18px;">次回は「手を動かす」回です</p>
+            </div>
+        </div>
+        
+    </div>
+    
+    <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1002; display: flex; gap: 15px;">
+        <a href="shin_dai3kai_zenhan.html" style="background: white; color: #2c3e50; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">← 前</a>
+        <a href="index.html" style="background: #667eea; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">目次</a>
+        <a href="shin_dai4kai_zenhan.html" style="background: white; color: #2c3e50; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">次 →</a>
+    </div>
+    
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← 前へ</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">次へ →</button>
+    </div>
+    
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('totalSlides').textContent = 24;
+        
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlide + 13;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+        
+        function changeSlide(dir) { showSlide(currentSlide + dir); }
+        document.addEventListener('keydown', e => { if(e.key==='ArrowLeft') changeSlide(-1); if(e.key==='ArrowRight') changeSlide(1); });
+        
+        showSlide(0);
+    </script>
+</body>
+</html>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第4回（後半）：実装の基本とプロジェクト設計</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Yu Gothic', 'Meiryo', sans-serif; background: linear-gradient(135deg, #27ae60 0%, #2980b9 100%); overflow: hidden; height: 100vh; }
+        .slide-container { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px; }
+        .slide { display: none; background: white; border-radius: 20px; padding: 50px; max-width: 1100px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideIn 0.4s ease-out; }
+        .slide.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 2.3em; color: #2c3e50; margin-bottom: 15px; text-align: center; }
+        h2 { font-size: 1.8em; color: #27ae60; margin-bottom: 25px; border-bottom: 3px solid #27ae60; padding-bottom: 12px; }
+        h3 { font-size: 1.4em; color: #2980b9; margin: 20px 0 12px 0; }
+        h4 { font-size: 1.15em; color: #2c3e50; margin: 15px 0 8px 0; }
+        p, li { font-size: 1.05em; line-height: 1.7; color: #34495e; margin-bottom: 12px; }
+        ul, ol { margin-left: 25px; }
+        .subtitle { font-size: 1.2em; color: #7f8c8d; text-align: center; margin-bottom: 10px; }
+        .author { text-align: center; color: #7f8c8d; font-size: 1.05em; margin-top: 25px; }
+        .box { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 18px 0; border-left: 5px solid #27ae60; }
+        .highlight { background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%); padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+        .emphasis { color: #e74c3c; font-weight: bold; }
+        .code { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.9em; margin: 15px 0; overflow-x: auto; }
+        .formula { background: #ecf0f1; padding: 18px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 1.15em; text-align: center; margin: 18px 0; }
+        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin: 18px 0; }
+        .three-columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin: 18px 0; }
+        .navigation { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; gap: 18px; z-index: 1000; }
+        .nav-button { background: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 1.05em; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: all 0.3s; }
+        .nav-button:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(0,0,0,0.3); }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-number { position: fixed; bottom: 18px; right: 18px; background: white; padding: 8px 16px; border-radius: 15px; font-weight: bold; color: #2c3e50; box-shadow: 0 3px 10px rgba(0,0,0,0.2); z-index: 1001; }
+        .card { background: white; border-radius: 8px; padding: 18px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); border-top: 4px solid #27ae60; text-align: center; }
+        @media (max-width: 768px) { .slide { padding: 25px; } h1 { font-size: 1.8em; } h2 { font-size: 1.4em; } .two-columns, .three-columns { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    
+    <div class="slide-number"><span id="currentSlide">14</span> / 26</div>
+    
+    <div class="slide-container">
+        
+        <!-- スライド14: 通常の勾配降下法の実装 -->
+        <div style="position: fixed; top: 20px; left: 20px; z-index: 1002;"><a href="index.html" style="background: white; color: #667eea; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2); display: inline-block;">← 目次に戻る</a></div>
+        <div class="slide active">
+            <h2>📉 通常の勾配降下法の実装</h2>
+            <div class="box">
+                <h3>実装コード</h3>
+                <div class="code" style="font-size: 0.85em;">
+def gradient_descent(theta_init, data, lr=0.01, n_iters=100):
+    """通常の勾配降下法"""
+    theta = theta_init.copy()
+    history = [theta.copy()]
+    
+    for i in range(n_iters):
+        grad = gradient_nll(theta, data)
+        theta = theta - lr * grad
+        history.append(theta.copy())
+    
+    return np.array(history)
+
+# 実行
+theta_init = np.array([0.0, 1.0])  # 初期値
+history_gd = gradient_descent(theta_init, data, 
+                               lr=0.01, n_iters=100)
+
+print(f"True: μ={true_mu:.2f}, σ={true_sigma:.2f}")
+print(f"GD final: μ={history_gd[-1,0]:.2f}, σ={history_gd[-1,1]:.2f}")
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.15em; color: #27ae60;">
+                実行して結果を確認しましょう
+            </p>
+        </div>
+        
+        <!-- スライド15: 自然勾配降下法の実装 -->
+        <div class="slide">
+            <h2>🎯 自然勾配降下法の実装</h2>
+            <div class="box">
+                <h3>実装コード</h3>
+                <div class="code" style="font-size: 0.85em;">
+def natural_gradient_descent(theta_init, data, 
+                              lr=0.01, n_iters=100):
+    """自然勾配降下法"""
+    theta = theta_init.copy()
+    history = [theta.copy()]
+    
+    for i in range(n_iters):
+        grad = gradient_nll(theta, data)
+        
+        # Fisher情報行列
+        G = fisher_information_normal(theta[0], theta[1])
+        
+        # 自然勾配
+        natural_grad = np.linalg.solve(G, grad)
+        
+        theta = theta - lr * natural_grad
+        history.append(theta.copy())
+    
+    return np.array(history)
+
+# 実行
+history_ngd = natural_gradient_descent(theta_init, data, 
+                                        lr=0.1, n_iters=100)
+
+print(f"True: μ={true_mu:.2f}, σ={true_sigma:.2f}")
+print(f"NGD: μ={history_ngd[-1,0]:.2f}, σ={history_ngd[-1,1]:.2f}")
+                </div>
+            </div>
+        </div>
+        
+        <!-- スライド16: 2つの方法の比較 -->
+        <div class="slide">
+            <h2>📊 2つの方法の比較（可視化）</h2>
+            <div class="box">
+                <h3>軌跡の可視化</h3>
+                <div class="code" style="font-size: 0.75em;">
+plt.figure(figsize=(12, 5))
+
+# 左：パラメータ空間での軌跡
+plt.subplot(1, 2, 1)
+plt.plot(history_gd[:, 0], history_gd[:, 1], 'o-', 
+         label='Gradient Descent', alpha=0.7)
+plt.plot(history_ngd[:, 0], history_ngd[:, 1], 's-', 
+         label='Natural Gradient', alpha=0.7)
+plt.plot(true_mu, true_sigma, 'r*', markersize=20, label='True')
+plt.xlabel('μ')
+plt.ylabel('σ')
+plt.legend()
+plt.title('Parameter Space Trajectory')
+plt.grid(True)
+
+# 右：損失の変化
+plt.subplot(1, 2, 2)
+loss_gd = [neg_log_likelihood(theta, data) for theta in history_gd]
+loss_ngd = [neg_log_likelihood(theta, data) for theta in history_ngd]
+plt.plot(loss_gd, label='Gradient Descent')
+plt.plot(loss_ngd, label='Natural Gradient')
+plt.xlabel('Iteration')
+plt.ylabel('Negative Log-Likelihood')
+plt.legend()
+plt.title('Loss Convergence')
+plt.grid(True)
+
+plt.tight_layout()
+plt.show()
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 20px; font-size: 1.1em; color: #2980b9;">
+                自然勾配の方が収束が速い！軌跡が異なる（測地線）
+            </p>
+        </div>
+        
+        <!-- スライド17: 自然勾配実装のまとめ -->
+        <div class="slide">
+            <h2>✅ 自然勾配実装のまとめ</h2>
+            <div class="box">
+                <h3>学んだこと</h3>
+                <ol>
+                    <li>目的関数の設定</li>
+                    <li>通常の勾配降下法の実装</li>
+                    <li>自然勾配降下法の実装</li>
+                    <li>2つの方法の比較</li>
+                </ol>
+            </div>
+            <div class="box" style="border-left-color: #2980b9;">
+                <h3>重要ポイント</h3>
+                <ul>
+                    <li>自然勾配は収束が速い</li>
+                    <li>Fisher計量を考慮した最適化</li>
+                </ul>
+            </div>
+            <div class="box" style="background: linear-gradient(120deg, #27ae60 0%, #2980b9 100%); color: white; border: none;">
+                <h3 style="color: white;">次：統一方程式</h3>
+                <p style="font-size: 1.1em; text-align: center; margin-top: 10px; color: white;">
+                    発散・収束・結晶化を統合
+                </p>
+            </div>
+        </div>
+        
+        <!-- スライド18: 統一方程式の復習 -->
+        <div class="slide">
+            <h2>✨ 統一方程式の復習</h2>
+            <div class="box">
+                <h3>統一方程式</h3>
+                <div class="formula">
+                    dθ/dt = -G<sup>-1</sup>(θ) ∇L(θ) + √(2/β) η(t)
+                </div>
+            </div>
+            <div class="two-columns">
+                <div class="box" style="border-left-color: #2980b9;">
+                    <h4>第1項</h4>
+                    <p>収束（決定論的）</p>
+                    <p>自然勾配降下</p>
+                </div>
+                <div class="box" style="border-left-color: #e74c3c;">
+                    <h4>第2項</h4>
+                    <p>発散（確率論的）</p>
+                    <p>ランダム探索</p>
+                </div>
+            </div>
+            <div class="box" style="background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%); color: #2c3e50; border: none;">
+                <h3>βの役割</h3>
+                <p style="font-size: 1.15em; text-align: center; margin-top: 10px;">
+                    βを変えることで3段階を制御
+                </p>
+            </div>
+        </div>
+        
+        <!-- スライド19: 統一方程式の実装 -->
+        <div class="slide">
+            <h2>💻 統一方程式の実装</h2>
+            <div class="box">
+                <h3>実装コード</h3>
+                <div class="code" style="font-size: 0.75em;">
+def unified_equation(theta_init, data, beta_schedule, 
+                     dt=0.01, n_steps=1000):
+    """統一方程式のシミュレーション"""
+    theta = theta_init.copy()
+    history = [theta.copy()]
+    
+    for t in range(n_steps):
+        # 現在のβ
+        beta = beta_schedule(t / n_steps)
+        
+        # 勾配とFisher情報行列
+        grad = gradient_nll(theta, data)
+        G = fisher_information_normal(theta[0], theta[1])
+        
+        # 決定論的項（収束）
+        deterministic = -np.linalg.solve(G, grad)
+        
+        # 確率論的項（発散）
+        noise = np.random.randn(2)
+        stochastic = np.sqrt(2 / beta) * noise
+        
+        # 更新
+        theta = theta + dt * (deterministic + stochastic)
+        history.append(theta.copy())
+    
+    return np.array(history)
+                </div>
+            </div>
+        </div>
+        
+        <!-- スライド20: βスケジュールと3段階 -->
+        <div class="slide">
+            <h2>🌡️ βスケジュールと3段階</h2>
+            <div class="box">
+                <h3>3段階のβスケジュール</h3>
+                <div class="code" style="font-size: 0.85em;">
+def beta_schedule_3stages(t):
+    """
+    3段階のβスケジュール
+    t=0.0-0.3: 発散（β小）
+    t=0.3-0.7: 収束（β中）
+    t=0.7-1.0: 結晶化（β大）
+    """
+    if t < 0.3:
+        return 0.1  # 発散
+    elif t < 0.7:
+        return 1.0 + (t - 0.3) * 20  # 収束（線形増加）
+    else:
+        return 10.0 + (t - 0.7) * 90  # 結晶化（急増）
+
+# 実行
+history_unified = unified_equation(
+    theta_init, data, 
+    beta_schedule_3stages, 
+    dt=0.01, n_steps=1000
+)
+
+# 可視化
+plt.figure(figsize=(10, 4))
+plt.plot(history_unified[:, 0], history_unified[:, 1], alpha=0.5)
+plt.plot(history_unified[0,0], history_unified[0,1], 
+         'go', markersize=10, label='Start')
+plt.plot(history_unified[-1,0], history_unified[-1,1], 
+         'r*', markersize=15, label='End')
+plt.plot(true_mu, true_sigma, 'b*', markersize=15, label='True')
+plt.xlabel('μ')
+plt.ylabel('σ')
+plt.legend()
+plt.title('Unified Equation: 3-Stage Dynamics')
+plt.grid(True)
+plt.show()
+                </div>
+            </div>
+        </div>
+        
+        <!-- スライド21: 統一方程式のまとめ -->
+        <div class="slide">
+            <h2>✅ 統一方程式のまとめ</h2>
+            <div class="box">
+                <h3>学んだこと</h3>
+                <ol>
+                    <li>統一方程式の実装</li>
+                    <li>βスケジュールの設計</li>
+                    <li>3段階（発散・収束・結晶化）の可視化</li>
+                </ol>
+            </div>
+            <div class="box" style="background: linear-gradient(120deg, #27ae60 0%, #2980b9 100%); color: white; border: none;">
+                <h3 style="color: white;">重要ポイント</h3>
+                <p style="font-size: 1.2em; text-align: center; margin-top: 10px; color: white;">
+                    1つの方程式で3段階を表現<br>
+                    βが創造のダイナミクスを制御
+                </p>
+            </div>
+        </div>
+        
+        <!-- スライド22: 自分の問題を定式化する -->
+        <div class="slide">
+            <h2>🎯 自分の問題を定式化する</h2>
+            <div class="box">
+                <h3>ステップ</h3>
+                <ol>
+                    <li>解決したい問題を選ぶ</li>
+                    <li>パラメータ空間Θを定義</li>
+                    <li>目的関数L(θ)を定義</li>
+                    <li>Fisher計量G(θ)を計算（または近似）</li>
+                    <li>実装・実験</li>
+                </ol>
+            </div>
+            <div class="box" style="border-left-color: #2980b9;">
+                <h3>例</h3>
+                <ul>
+                    <li><strong>テキスト生成</strong>：単語分布のパラメータ</li>
+                    <li><strong>画像認識</strong>：特徴量の分布パラメータ</li>
+                    <li><strong>意思決定</strong>：選択確率の分布パラメータ</li>
+                </ul>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.15em; color: #27ae60; font-weight: bold;">
+                自分の問題を考えてみましょう
+            </p>
+        </div>
+        
+        <!-- スライド23: プロジェクト設計のテンプレート -->
+        <div class="slide">
+            <h2>📋 プロジェクト設計のテンプレート</h2>
+            <div class="box">
+                <h3>テンプレート</h3>
+                <div class="code" style="font-size: 0.85em; background: #ecf0f1; color: #2c3e50;">
+# プロジェクトタイトル
+[あなたのプロジェクト名]
+
+## 問題設定
+- 何を解決したいか？
+- なぜ情報幾何学が有効か？
+
+## パラメータ空間
+- θ = [...]
+- 次元: d = ?
+
+## 目的関数
+- L(θ) = ...
+- 意味: ...
+
+## Fisher計量
+- G(θ) = ...
+- 計算方法: 解析的 / 数値的
+
+## 実装計画
+1. データ収集・生成
+2. 目的関数の実装
+3. Fisher計量の実装
+4. 最適化アルゴリズムの実装
+5. 実験・評価
+
+## 期待される成果
+- ...
+                </div>
+            </div>
+        </div>
+        
+        <!-- スライド24: プロジェクト例の紹介 -->
+        <div class="slide">
+            <h2>💡 プロジェクト例の紹介</h2>
+            <div class="box">
+                <h3>例1：テキスト生成</h3>
+                <ul>
+                    <li><strong>パラメータ</strong>：単語の出現確率分布</li>
+                    <li><strong>目的関数</strong>：負の対数尤度</li>
+                    <li><strong>Fisher計量</strong>：多項分布のFisher情報行列</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #2980b9;">
+                <h3>例2：画像認識</h3>
+                <ul>
+                    <li><strong>パラメータ</strong>：CNNの重みの分布</li>
+                    <li><strong>目的関数</strong>：交差エントロピー</li>
+                    <li><strong>Fisher計量</strong>：経験的Fisher情報行列</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #e74c3c;">
+                <h3>例3：強化学習</h3>
+                <ul>
+                    <li><strong>パラメータ</strong>：方策の分布パラメータ</li>
+                    <li><strong>目的関数</strong>：期待報酬の負値</li>
+                    <li><strong>Fisher計量</strong>：方策勾配のFisher情報行列</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- スライド25: 全4回のまとめ -->
+        <div class="slide">
+            <h2>📚 全4回のまとめ</h2>
+            <div class="box">
+                <h3>第1回：情報幾何学の基礎</h3>
+                <p>多様体、Fisher計量、測地線</p>
+            </div>
+            <div class="box" style="border-left-color: #667eea;">
+                <h3>第2回：発散段階の数理</h3>
+                <p>エントロピー最大化、ランダムウォーク</p>
+            </div>
+            <div class="box" style="border-left-color: #f39c12;">
+                <h3>第3回：収束・結晶化・統合</h3>
+                <p>自然勾配、相転移、統一方程式</p>
+            </div>
+            <div class="box" style="border-left-color: #27ae60;">
+                <h3>第4回（今日）：実装とプロジェクト設計</h3>
+                <p>Python実装、個人プロジェクト</p>
+            </div>
+            <div class="box" style="background: linear-gradient(120deg, #27ae60 0%, #2980b9 100%); color: white; border: none; margin-top: 20px;">
+                <h3 style="color: white;">到達点</h3>
+                <p style="font-size: 1.15em; text-align: center; margin-top: 10px; color: white;">
+                    創造過程を数学的に理解<br>
+                    実装できる<br>
+                    自分の問題に応用できる
+                </p>
+            </div>
+        </div>
+        
+        <!-- スライド26: 今後の展望と学習リソース -->
+        <div class="slide">
+            <h2>🚀 今後の展望と学習リソース</h2>
+            <div class="box">
+                <h3>今後の学習</h3>
+                <ul>
+                    <li>より高度な情報幾何学</li>
+                    <li>深層学習との統合</li>
+                    <li>実際のプロジェクトに適用</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #2980b9;">
+                <h3>学習リソース</h3>
+                <ul>
+                    <li><strong>書籍</strong>：Amari "Information Geometry and Its Applications"</li>
+                    <li><strong>オンラインコース</strong>：Coursera, edX の機械学習コース</li>
+                    <li><strong>論文</strong>：立さんの論文（創造学会2025）、FEP・WBA関連論文</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #27ae60;">
+                <h3>コミュニティ</h3>
+                <ul>
+                    <li>GitHub でコード共有</li>
+                    <li>勉強会の開催</li>
+                    <li>立さんへの質問・相談</li>
+                </ul>
+            </div>
+            <div style="text-align: center; margin-top: 40px;">
+                <h2 style="color: #27ae60;">お疲れ様でした！</h2>
+                <p style="font-size: 1.2em; margin-top: 18px;">学習を継続しましょう</p>
+            </div>
+        </div>
+        
+    </div>
+    
+    <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1002; display: flex; gap: 15px;">
+        <a href="shin_dai4kai_zenhan.html" style="background: white; color: #2c3e50; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">← 前</a>
+        <a href="index.html" style="background: #667eea; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">目次</a>
+    </div>
+    
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← 前へ</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">次へ →</button>
+    </div>
+    
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('totalSlides').textContent = 26;
+        
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlide + 14;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+        
+        function changeSlide(dir) { showSlide(currentSlide + dir); }
+        document.addEventListener('keydown', e => { if(e.key==='ArrowLeft') changeSlide(-1); if(e.key==='ArrowRight') changeSlide(1); });
+        
+        showSlide(0);
+    </script>
+</body>
+</html>

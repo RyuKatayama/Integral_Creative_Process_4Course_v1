@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第2回（前半）：創造過程の理論的基礎</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Yu Gothic', 'Meiryo', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); overflow: hidden; height: 100vh; }
+        .slide-container { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px; }
+        .slide { display: none; background: white; border-radius: 20px; padding: 50px; max-width: 1100px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideIn 0.4s ease-out; }
+        .slide.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 2.3em; color: #2c3e50; margin-bottom: 15px; text-align: center; }
+        h2 { font-size: 1.8em; color: #667eea; margin-bottom: 25px; border-bottom: 3px solid #667eea; padding-bottom: 12px; }
+        h3 { font-size: 1.4em; color: #764ba2; margin: 20px 0 12px 0; }
+        h4 { font-size: 1.15em; color: #2c3e50; margin: 15px 0 8px 0; }
+        p, li { font-size: 1.05em; line-height: 1.7; color: #34495e; margin-bottom: 12px; }
+        ul { margin-left: 25px; }
+        .subtitle { font-size: 1.2em; color: #7f8c8d; text-align: center; margin-bottom: 10px; }
+        .author { text-align: center; color: #7f8c8d; font-size: 1.05em; margin-top: 25px; }
+        .box { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 18px 0; border-left: 5px solid #667eea; }
+        .highlight { background: linear-gradient(120deg, #f6d365 0%, #fda085 100%); padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+        .emphasis { color: #e74c3c; font-weight: bold; }
+        .formula { background: #ecf0f1; padding: 18px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 1.15em; text-align: center; margin: 18px 0; }
+        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin: 18px 0; }
+        .three-columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin: 18px 0; }
+        .navigation { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; gap: 18px; z-index: 1000; }
+        .nav-button { background: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 1.05em; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: all 0.3s; }
+        .nav-button:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(0,0,0,0.3); }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-number { position: fixed; bottom: 18px; right: 18px; background: white; padding: 8px 16px; border-radius: 15px; font-weight: bold; color: #2c3e50; box-shadow: 0 3px 10px rgba(0,0,0,0.2); z-index: 1001; }
+        .card { background: white; border-radius: 8px; padding: 18px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); border-top: 4px solid #667eea; text-align: center; }
+        @media (max-width: 768px) { .slide { padding: 25px; } h1 { font-size: 1.8em; } h2 { font-size: 1.4em; } .two-columns, .three-columns { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    
+    <div class="slide-number"><span id="currentSlide">1</span> / 22</div>
+    
+    <div class="slide-container">
+        
+        <!-- スライド1: タイトル -->
+        <div style="position: fixed; top: 20px; left: 20px; z-index: 1002;"><a href="index.html" style="background: white; color: #667eea; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2); display: inline-block;">← 目次に戻る</a></div>
+        <div class="slide active">
+            <h1>第2回：創造過程の理論的基礎</h1>
+            <div class="subtitle">國藤モデルと発散段階の数理（前半）</div>
+            <div style="text-align: center; margin: 50px 0;">
+                <div style="font-size: 4em; color: #667eea;">💡</div>
+                <p style="font-size: 2em; color: #667eea; font-weight: bold; margin-top: 20px;">発散</p>
+                <p style="font-size: 1.2em; color: #7f8c8d; margin-top: 10px;">アイデアを広げる</p>
+            </div>
+            <div class="author">
+                <p><strong>講師：</strong>片山 立（Ryu Katayama, Ph.D.）</p>
+                <p>夢・アーキテクティング工房 | 公共貨幣フォーラム 理事</p>
+                <p>2026年1月</p>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.1em; color: #764ba2; font-weight: bold;">
+                今日は「発散段階」に集中します
+            </p>
+        </div>
+        
+        <!-- スライド2: 前回の復習 -->
+        <div class="slide">
+            <h2>📚 前回（第1回）の復習</h2>
+            <div class="three-columns">
+                <div class="card" style="border-top-color: #667eea;">
+                    <h4>①多様体</h4>
+                    <p style="font-size: 2em; margin: 20px 0;">🌐</p>
+                    <p style="font-size: 0.95em;">確率分布の空間</p>
+                </div>
+                <div class="card" style="border-top-color: #764ba2;">
+                    <h4>②Fisher計量</h4>
+                    <p style="font-size: 2em; margin: 20px 0;">📏</p>
+                    <p style="font-size: 0.95em;">真の距離</p>
+                </div>
+                <div class="card" style="border-top-color: #f39c12;">
+                    <h4>③測地線</h4>
+                    <p style="font-size: 2em; margin: 20px 0;">➡️</p>
+                    <p style="font-size: 0.95em;">最短経路</p>
+                </div>
+            </div>
+            <div class="box" style="margin-top: 25px;">
+                <h3>今日どう使われるか</h3>
+                <ul>
+                    <li><strong>多様体M</strong> → 発散段階で全体を探索</li>
+                    <li><strong>Fisher計量</strong> → 収束の評価基準（次回）</li>
+                    <li><strong>測地線</strong> → 自然勾配=最適経路（次回）</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- スライド3: 今日のゴール -->
+        <div class="slide">
+            <h2>🎯 今日のゴール</h2>
+            <div class="box">
+                <h3>3つの到達目標</h3>
+                <ul>
+                    <li><strong>目標1：</strong>國藤モデルの3段階を理解</li>
+                    <li><strong>目標2：</strong>発散段階の数学的定式化を理解</li>
+                    <li><strong>目標3：</strong>エントロピー最大化の意味を理解</li>
+                </ul>
+            </div>
+            <div style="text-align: center; margin: 30px 0;">
+                <div style="display: inline-block; padding: 20px 40px; background: #667eea; color: white; border-radius: 10px; font-size: 1.3em; font-weight: bold;">発散</div>
+                <span style="font-size: 2em; margin: 0 20px; color: #7f8c8d;">→</span>
+                <div style="display: inline-block; padding: 20px 40px; background: #ecf0f1; color: #7f8c8d; border-radius: 10px; font-size: 1.3em;">収束</div>
+                <span style="font-size: 2em; margin: 0 20px; color: #7f8c8d;">→</span>
+                <div style="display: inline-block; padding: 20px 40px; background: #ecf0f1; color: #7f8c8d; border-radius: 10px; font-size: 1.3em;">結晶化</div>
+            </div>
+            <div class="box" style="border-left-color: #764ba2; margin-top: 20px;">
+                <h3>なぜ発散から始めるか</h3>
+                <p>発散は創造の<span class="highlight">出発点</span>。可能性の空間を広げることから全てが始まる。</p>
+            </div>
+        </div>
+        
+        <!-- スライド4: 國藤進とは -->
+        <div class="slide">
+            <h2>👤 國藤進とは</h2>
+            <div class="box">
+                <h3>プロフィール</h3>
+                <ul>
+                    <li><strong>國藤進</strong>（Susumu Kunifuji）</li>
+                    <li>北陸先端科学技術大学院大学（JAIST）名誉教授</li>
+                    <li>創造技法の研究の第一人者</li>
+                    <li>KJ法（川喜田二郎）の情報学的発展</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #764ba2;">
+                <h3>1993年の論文</h3>
+                <p>創造過程の<strong>3段階モデル</strong>を提唱</p>
+                <div class="three-columns" style="margin-top: 20px;">
+                    <div style="text-align: center; padding: 15px; background: #667eea; color: white; border-radius: 8px;">
+                        <p style="font-size: 1.3em; margin-bottom: 8px;">発散</p>
+                        <p style="font-size: 0.9em;">Divergence</p>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #f39c12; color: white; border-radius: 8px;">
+                        <p style="font-size: 1.3em; margin-bottom: 8px;">収束</p>
+                        <p style="font-size: 0.9em;">Convergence</p>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: #17a2b8; color: white; border-radius: 8px;">
+                        <p style="font-size: 1.3em; margin-bottom: 8px;">結晶化</p>
+                        <p style="font-size: 0.9em;">Crystallization</p>
+                    </div>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.1em; color: #667eea; font-weight: bold;">
+                創造過程研究の系譜：1960s KJ法 → 1993 國藤モデル → 2020s 数理化
+            </p>
+        </div>
+        
+        <!-- スライド5: 創造過程の3段階 -->
+        <div class="slide">
+            <h2>🔄 創造過程の3段階（概要）</h2>
+            <div class="box" style="border-left-color: #667eea;">
+                <h3>発散段階（Divergence）</h3>
+                <ul>
+                    <li>アイデアの拡散</li>
+                    <li>多様な可能性の探索</li>
+                    <li>「ブレインストーミング」のイメージ</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #f39c12;">
+                <h3>収束段階（Convergence）</h3>
+                <ul>
+                    <li>アイデアの絞り込み</li>
+                    <li>最適解への収束</li>
+                    <li>「分析と統合」のイメージ</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #17a2b8;">
+                <h3>結晶化段階（Crystallization）</h3>
+                <ul>
+                    <li>突然のひらめき</li>
+                    <li>新しい構造の創発</li>
+                    <li>「アハ体験」のイメージ</li>
+                </ul>
+            </div>
+            <p style="text-align: center; margin-top: 20px; font-size: 1.1em; color: #764ba2;">
+                誰でも経験したことがある過程を、数式で記述する
+            </p>
+        </div>
+        
+        <!-- スライド6: 発散段階の特徴 -->
+        <div class="slide">
+            <h2>💡 発散段階の特徴</h2>
+            <div class="box">
+                <h3>目的</h3>
+                <p style="font-size: 1.2em; text-align: center; margin: 15px 0;">探索空間を<span class="highlight">広げる</span></p>
+            </div>
+            <div class="two-columns">
+                <div class="box" style="border-left-color: #667eea;">
+                    <h4>特徴</h4>
+                    <ul>
+                        <li>判断を保留する</li>
+                        <li>量を重視（質より量）</li>
+                        <li>自由連想</li>
+                        <li><span class="emphasis">批判禁止</span></li>
+                    </ul>
+                </div>
+                <div class="box" style="border-left-color: #764ba2;">
+                    <h4>例</h4>
+                    <ul>
+                        <li>ブレインストーミング</li>
+                        <li>マインドマップ</li>
+                        <li>KJ法の「ラベル作り」</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="box" style="background: linear-gradient(120deg, #f6d365 0%, #fda085 100%); color: #2c3e50; border: none;">
+                <h3>重要ポイント</h3>
+                <p style="font-size: 1.15em; text-align: center;">
+                    「批判禁止」はなぜ重要？ → 後で数式で説明（エントロピー最大化）
+                </p>
+            </div>
+        </div>
+        
+        <!-- スライド7: 収束段階の特徴（予告） -->
+        <div class="slide">
+            <h2>🎯 収束段階の特徴（予告）</h2>
+            <div class="box">
+                <h3>目的</h3>
+                <p style="font-size: 1.2em; text-align: center; margin: 15px 0;">最適解を<span class="highlight">見つける</span>（次回詳しく）</p>
+            </div>
+            <div class="two-columns">
+                <div class="box" style="border-left-color: #f39c12;">
+                    <h4>特徴</h4>
+                    <ul>
+                        <li>判断と評価</li>
+                        <li>質を重視</li>
+                        <li>論理的分析</li>
+                    </ul>
+                </div>
+                <div class="box" style="border-left-color: #e74c3c;">
+                    <h4>例</h4>
+                    <ul>
+                        <li>プロトタイピング</li>
+                        <li>実験と検証</li>
+                        <li>KJ法の「グループ編成」</li>
+                    </ul>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 20px; font-size: 1.1em; color: #7f8c8d;">
+                今日は詳しく扱いません（次回）。発散の「逆」のプロセス。
+            </p>
+        </div>
+        
+        <!-- スライド8: 結晶化段階の特徴（予告） -->
+        <div class="slide">
+            <h2>✨ 結晶化段階の特徴（予告）</h2>
+            <div class="box">
+                <h3>目的</h3>
+                <p style="font-size: 1.2em; text-align: center; margin: 15px 0;">新しい構造の<span class="highlight">創発</span>（次回詳しく）</p>
+            </div>
+            <div class="two-columns">
+                <div class="box" style="border-left-color: #17a2b8;">
+                    <h4>特徴</h4>
+                    <ul>
+                        <li>突然のひらめき</li>
+                        <li>質的転換</li>
+                        <li>不可逆的変化</li>
+                    </ul>
+                </div>
+                <div class="box" style="border-left-color: #764ba2;">
+                    <h4>例</h4>
+                    <ul>
+                        <li>アルキメデスの「エウレカ！」</li>
+                        <li>ケクレのベンゼン環の夢</li>
+                        <li>KJ法の「表札作り」</li>
+                    </ul>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 20px; font-size: 1.1em; color: #7f8c8d;">
+                これも次回詳しく。今日は3段階の全体像を掴むことが目標。
+            </p>
+        </div>
+        
+        <!-- スライド9: 3段階の関係性 -->
+        <div class="slide">
+            <h2>🔗 3段階の関係性</h2>
+            <div class="box">
+                <h3>①順序性</h3>
+                <p style="text-align: center; font-size: 1.2em; margin: 15px 0;">
+                    発散 → 収束 → 結晶化
+                </p>
+            </div>
+            <div class="box" style="border-left-color: #764ba2;">
+                <h3>②反復性</h3>
+                <p>1サイクルで終わらない。何度も繰り返す。</p>
+            </div>
+            <div class="box" style="border-left-color: #f39c12;">
+                <h3>③入れ子構造</h3>
+                <p>大きな創造過程の中に小さな創造過程がある。</p>
+            </div>
+            <div class="box" style="border-left-color: #17a2b8;">
+                <h3>④個人差</h3>
+                <p>人によって得意な段階が異なる。</p>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.15em; color: #667eea; font-weight: bold;">
+                創造は直線的ではない。でも、今日はまず「発散」だけを深掘り！
+            </p>
+        </div>
+        
+        <!-- スライド10: 発散段階の数理化 - 基本アイデア -->
+        <div class="slide">
+            <h2>📐 発散段階の数理化（1）- 基本アイデア</h2>
+            <div class="box" style="background: linear-gradient(120deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                <h3 style="color: white;">問い</h3>
+                <p style="font-size: 1.3em; text-align: center; margin: 15px 0;">
+                    発散段階を数式でどう表現するか？
+                </p>
+            </div>
+            <div class="box">
+                <h3>直感</h3>
+                <p style="font-size: 1.2em; text-align: center; margin: 15px 0;">
+                    「できるだけ<span class="highlight">広く探索</span>する」
+                </p>
+            </div>
+            <div class="box" style="border-left-color: #e74c3c;">
+                <h3>数学的定式化</h3>
+                <p style="font-size: 1.3em; text-align: center; margin: 15px 0; font-weight: bold;">
+                    エントロピー最大化
+                </p>
+            </div>
+            <p style="text-align: center; margin-top: 30px; font-size: 1.1em; color: #764ba2;">
+                次のスライドから、エントロピーとは何かを学びます
+            </p>
+        </div>
+        
+        <!-- スライド11: エントロピーとは -->
+        <div class="slide">
+            <h2>📊 エントロピーとは</h2>
+            <div class="box">
+                <h3>Shannon エントロピー</h3>
+                <div class="formula">
+                    H(p) = -∫ p(x) log p(x) dx
+                </div>
+            </div>
+            <div class="two-columns">
+                <div class="box" style="border-left-color: #667eea;">
+                    <h4>高エントロピー</h4>
+                    <ul>
+                        <li>予測不可能</li>
+                        <li>情報が少ない</li>
+                        <li><span class="emphasis">選択肢が多い</span></li>
+                    </ul>
+                    <p style="text-align: center; margin-top: 10px; font-size: 0.9em;">→ 発散段階</p>
+                </div>
+                <div class="box" style="border-left-color: #f39c12;">
+                    <h4>低エントロピー</h4>
+                    <ul>
+                        <li>予測可能</li>
+                        <li>情報が多い</li>
+                        <li><span class="emphasis">選択肢が少ない</span></li>
+                    </ul>
+                    <p style="text-align: center; margin-top: 10px; font-size: 0.9em;">→ 収束段階</p>
+                </div>
+            </div>
+            <div class="box" style="background: linear-gradient(120deg, #f6d365 0%, #fda085 100%); color: #2c3e50; border: none; margin-top: 20px;">
+                <h3>発散段階 = 高エントロピー状態を目指す</h3>
+                <p style="text-align: center; font-size: 1.15em; margin-top: 10px;">
+                    「決めつけない」を数式で表現！
+                </p>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.2em; color: #667eea; font-weight: bold;">
+                → 続きは第2回（後半）へ
+            </p>
+        </div>
+        
+    </div>
+    
+    <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1002; display: flex; gap: 15px;">
+        <a href="shin_dai1kai.html" style="background: white; color: #2c3e50; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">← 前</a>
+        <a href="index.html" style="background: #667eea; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">目次</a>
+        <a href="shin_dai2kai_kouhan.html" style="background: white; color: #2c3e50; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">次 →</a>
+    </div>
+    
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← 前へ</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">次へ →</button>
+    </div>
+    
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('totalSlides').textContent = 22;
+        
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlide + 1;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+        
+        function changeSlide(dir) { showSlide(currentSlide + dir); }
+        document.addEventListener('keydown', e => { if(e.key==='ArrowLeft') changeSlide(-1); if(e.key==='ArrowRight') changeSlide(1); });
+        
+        showSlide(0);
+    </script>
+</body>
+</html>

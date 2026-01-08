@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第1回：情報幾何学の基礎</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Yu Gothic', 'Meiryo', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); overflow: hidden; height: 100vh; }
+        .slide-container { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px; }
+        .slide { display: none; background: white; border-radius: 20px; padding: 50px; max-width: 1100px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideIn 0.4s ease-out; }
+        .slide.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { font-size: 2.3em; color: #2c3e50; margin-bottom: 15px; text-align: center; }
+        h2 { font-size: 1.8em; color: #667eea; margin-bottom: 25px; border-bottom: 3px solid #667eea; padding-bottom: 12px; }
+        h3 { font-size: 1.4em; color: #764ba2; margin: 20px 0 12px 0; }
+        h4 { font-size: 1.15em; color: #2c3e50; margin: 15px 0 8px 0; }
+        p, li { font-size: 1.05em; line-height: 1.7; color: #34495e; margin-bottom: 12px; }
+        ul { margin-left: 25px; }
+        .subtitle { font-size: 1.2em; color: #7f8c8d; text-align: center; margin-bottom: 10px; }
+        .author { text-align: center; color: #7f8c8d; font-size: 1.05em; margin-top: 25px; }
+        .box { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 18px 0; border-left: 5px solid #667eea; }
+        .highlight { background: linear-gradient(120deg, #f6d365 0%, #fda085 100%); padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+        .emphasis { color: #e74c3c; font-weight: bold; }
+        .formula { background: #ecf0f1; padding: 18px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 1.15em; text-align: center; margin: 18px 0; }
+        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin: 18px 0; }
+        .visualization { width: 100%; height: 350px; margin: 25px 0; border: 2px solid #ecf0f1; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; position: relative; }
+        .controls { margin: 18px 0; padding: 18px; background: #f8f9fa; border-radius: 10px; }
+        .slider-container { margin: 12px 0; }
+        .slider-container label { display: block; margin-bottom: 6px; font-weight: bold; color: #2c3e50; }
+        input[type="range"] { width: 100%; height: 6px; border-radius: 3px; background: #d3d3d3; outline: none; -webkit-appearance: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #667eea; cursor: pointer; }
+        input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #667eea; cursor: pointer; }
+        .navigation { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; gap: 18px; z-index: 1000; }
+        .nav-button { background: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 1.05em; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: all 0.3s; }
+        .nav-button:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(0,0,0,0.3); }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-number { position: fixed; bottom: 18px; right: 18px; background: white; padding: 8px 16px; border-radius: 15px; font-weight: bold; color: #2c3e50; box-shadow: 0 3px 10px rgba(0,0,0,0.2); z-index: 1001; }
+        canvas { max-width: 100%; max-height: 100%; }
+        .pulse { animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } }
+        .flow-diagram { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 25px 0; flex-wrap: wrap; }
+        .flow-step { background: #f8f9fa; padding: 18px 25px; border-radius: 8px; border-left: 5px solid #667eea; min-width: 140px; text-align: center; }
+        .arrow-right { font-size: 1.8em; color: #667eea; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin: 18px 0; }
+        .card { background: white; border-radius: 8px; padding: 18px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); border-top: 4px solid #667eea; }
+        @media (max-width: 768px) { .slide { padding: 25px; } h1 { font-size: 1.8em; } h2 { font-size: 1.4em; } .two-columns { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    
+    <div class="slide-number"><span id="currentSlide">1</span> / <span id="totalSlides">38</span></div>
+    
+    <div class="slide-container">
+        
+        <!-- スライド1: タイトル -->
+        <div style="position: fixed; top: 20px; left: 20px; z-index: 1002;"><a href="index.html" style="background: white; color: #667eea; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2); display: inline-block;">← 目次に戻る</a></div>
+        <div class="slide active">
+            <h1>第1回：情報幾何学の基礎</h1>
+            <div class="subtitle">確率分布の幾何学 - なぜFisher計量が"真の距離"なのか？</div>
+            <div style="text-align: center; margin: 40px 0;">
+                <svg width="380" height="280">
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#667eea;stop-opacity:0.7" />
+                            <stop offset="100%" style="stop-color:#764ba2;stop-opacity:0.7" />
+                        </linearGradient>
+                    </defs>
+                    <ellipse cx="190" cy="140" rx="140" ry="75" fill="url(#grad1)"><animate attributeName="ry" values="75;85;75" dur="3s" repeatCount="indefinite"/></ellipse>
+                    <path d="M 90 140 Q 190 90 290 140" stroke="#2c3e50" stroke-width="3" fill="none"><animate attributeName="stroke-dasharray" values="0,500;500,0;0,500" dur="4s" repeatCount="indefinite"/></path>
+                </svg>
+            </div>
+            <div class="author">
+                <p><strong>講師：</strong>片山 立（Ryu Katayama, Ph.D.）</p>
+                <p>夢・アーキテクティング工房 | 公共貨幣フォーラム 理事</p>
+                <p>2026年1月</p>
+            </div>
+        </div>
+        
+        <!-- スライド2: 本日のゴール -->
+        <div class="slide">
+            <h2>📚 本日のゴール</h2>
+            <div class="box">
+                <h3>3つの到達目標</h3>
+                <ul>
+                    <li><strong>目標1：</strong>多様体の直感的理解（「曲がった空間」とは何か）</li>
+                    <li><strong>目標2：</strong>Fisher情報計量の意味（なぜ"真の距離"なのか）</li>
+                    <li><strong>目標3：</strong>測地線の概念と計算（最短経路とは何か）</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #764ba2;">
+                <h3>これらが創造過程とどう関係するのか</h3>
+                <ul>
+                    <li><span class="highlight">発散段階</span> = 多様体全体の探索</li>
+                    <li><span class="highlight">収束段階</span> = 測地線に沿った最適化（自然勾配）</li>
+                    <li><span class="highlight">結晶化段階</span> = 相転移現象</li>
+                </ul>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.2em; color: #764ba2;"><strong>今日は「直感」を掴むことが最重要！</strong></p>
+        </div>
+        
+        <!-- スライド3: なぜ確率分布に幾何学が必要なのか？ -->
+        <div class="slide">
+            <h2>🤔 なぜ確率分布に幾何学が必要なのか？</h2>
+            <div class="box">
+                <h3>問い：確率分布をどう比較するか？</h3>
+                <p>2つの正規分布 N(μ₁, σ₁²) と N(μ₂, σ₂²) の「距離」をどう測る？</p>
+            </div>
+            <div class="two-columns">
+                <div>
+                    <h4>従来の方法</h4>
+                    <ul>
+                        <li><strong>KLダイバージェンス</strong><br>D<sub>KL</sub>(p||q) = ∫ p(x) log(p(x)/q(x)) dx</li>
+                        <li><strong>ワッサースタイン距離</strong></li>
+                        <li><strong>全変動距離</strong></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>問題点</h4>
+                    <ul>
+                        <li>❌ 対称ではない<br>D<sub>KL</sub>(p||q) ≠ D<sub>KL</sub>(q||p)</li>
+                        <li>❌ 三角不等式を満たさない</li>
+                        <li>❌ 「距離」の公理を満たさない</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="box" style="border-left-color: #e74c3c;">
+                <h3>✅ 解決策：確率分布を「多様体上の点」として扱う</h3>
+                <p class="emphasis">Fisher情報計量を使えば、真の「距離」が定義できる！</p>
+            </div>
+        </div>
+        
+        <!-- スライド4: 身近な例：地球の表面 -->
+        <div class="slide">
+            <h2>🌍 身近な例：地球の表面</h2>
+            <div class="two-columns">
+                <div>
+                    <h3>地球 = 多様体の典型例</h3>
+                    <ul>
+                        <li>平面地図では正確に表現できない</li>
+                        <li>曲率を持つ空間では「最短経路」が直線ではない</li>
+                        <li>大圏コース（測地線）の例：東京→ニューヨーク</li>
+                    </ul>
+                    <div class="box">
+                        <p><strong>直感：</strong>地球儀の上でひもを張ると、その経路が「測地線」</p>
+                    </div>
+                </div>
+                <div>
+                    <svg width="100%" height="450" viewBox="0 0 380 450">
+                        <circle cx="190" cy="140" r="110" fill="#4a90e2" opacity="0.25" stroke="#2c3e50" stroke-width="2"/>
+                        <ellipse cx="190" cy="140" rx="110" ry="110" fill="none" stroke="#2c3e50" stroke-width="1" opacity="0.3"/>
+                        <ellipse cx="190" cy="140" rx="82" ry="110" fill="none" stroke="#2c3e50" stroke-width="1" opacity="0.3"/>
+                        <ellipse cx="190" cy="140" rx="55" ry="110" fill="none" stroke="#2c3e50" stroke-width="1" opacity="0.3"/>
+                        <ellipse cx="190" cy="140" rx="110" ry="28" fill="none" stroke="#2c3e50" stroke-width="1" opacity="0.3"/>
+                        <ellipse cx="190" cy="140" rx="110" ry="55" fill="none" stroke="#2c3e50" stroke-width="1" opacity="0.3"/>
+                        <ellipse cx="190" cy="140" rx="110" ry="82" fill="none" stroke="#2c3e50" stroke-width="1" opacity="0.3"/>
+                        <path d="M 92 185 Q 190 75 288 185" stroke="#e74c3c" stroke-width="4" fill="none" stroke-dasharray="5,5">
+                            <animate attributeName="stroke-dashoffset" from="0" to="-10" dur="0.5s" repeatCount="indefinite"/>
+                        </path>
+                        <circle cx="92" cy="185" r="7" fill="#e74c3c" class="pulse"/>
+                        <circle cx="288" cy="185" r="7" fill="#e74c3c" class="pulse"/>
+                        <text x="92" y="210" text-anchor="middle" font-size="13">東京</text>
+                        <text x="288" y="210" text-anchor="middle" font-size="13">NY</text>
+                        <rect x="45" y="300" width="290" height="95" fill="#d5e8f7" stroke="#2c3e50" stroke-width="2"/>
+                        <line x1="45" y1="300" x2="335" y2="300" stroke="#2c3e50" stroke-width="1"/>
+                        <line x1="45" y1="347" x2="335" y2="347" stroke="#2c3e50" stroke-width="1"/>
+                        <line x1="45" y1="395" x2="335" y2="395" stroke="#2c3e50" stroke-width="1"/>
+                        <line x1="45" y1="347" x2="335" y2="395" stroke="#e74c3c" stroke-width="3"/>
+                        <text x="190" y="290" text-anchor="middle" font-size="11">平面地図では直線に見える</text>
+                        <text x="190" y="420" text-anchor="middle" font-size="11">でも実際は曲がった経路</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <!-- スライド5: 確率分布も「曲がった空間」 -->
+        <div class="slide">
+            <h2>📊 確率分布も「曲がった空間」</h2>
+            <p>正規分布族 {N(μ, σ²) | μ∈ℝ, σ>0} を考えます</p>
+            <canvas id="normalCanvas" width="900" height="320" style="width: 100%; max-height: 320px;"></canvas>
+            <div class="controls">
+                <div class="slider-container">
+                    <label>平均 μ: <span id="muVal">0</span></label>
+                    <input type="range" id="muSlide" min="-3" max="3" step="0.1" value="0">
+                </div>
+                <div class="slider-container">
+                    <label>標準偏差 σ: <span id="sigVal">1.0</span></label>
+                    <input type="range" id="sigSlide" min="0.3" max="2" step="0.1" value="1">
+                </div>
+            </div>
+            <div class="box">
+                <h3>重要なポイント</h3>
+                <ul>
+                    <li>パラメータ(μ, σ)が座標のようなもの</li>
+                    <li>でも、この空間は平坦ではない（曲がっている）</li>
+                    <li class="emphasis">なぜ？ → Fisher情報計量で測ると曲率が見える</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- スライド6: 今日の学習の地図 -->
+        <div class="slide">
+            <h2>🗺️ 今日の学習の地図</h2>
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <h4>ステップ1</h4>
+                    <p><strong>多様体とは何か</strong></p>
+                    <p style="font-size: 0.9em;">地球表面のアナロジー</p>
+                </div>
+                <div class="arrow-right">→</div>
+                <div class="flow-step">
+                    <h4>ステップ2</h4>
+                    <p><strong>Fisher計量とは何か</strong></p>
+                    <p style="font-size: 0.9em;">"真の距離"の定義</p>
+                </div>
+                <div class="arrow-right">→</div>
+                <div class="flow-step">
+                    <h4>ステップ3</h4>
+                    <p><strong>測地線とは何か</strong></p>
+                    <p style="font-size: 0.9em;">最短経路の計算</p>
+                </div>
+            </div>
+            <div class="box">
+                <h3>最後に演習</h3>
+                <p>正規分布族 N(μ, σ²) のFisher情報行列を計算</p>
+                <div class="formula">
+                    I(μ, σ) = [1/σ²    0   ]<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0      2/σ²]
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.2em; color: #667eea;"><strong>数式は後から追いかける</strong></p>
+        </div>
+        
+        <!-- スライド7: 多様体とは何か（1） -->
+        <div class="slide">
+            <h2>📐 多様体とは何か（1）- 定義への導入</h2>
+            <div class="two-columns">
+                <div>
+                    <h3>ユークリッド空間</h3>
+                    <p>ℝⁿ = 平坦な空間</p>
+                    <svg width="100%" height="180" viewBox="0 0 280 180">
+                        <defs>
+                            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#d3d3d3" stroke-width="0.5"/>
+                            </pattern>
+                        </defs>
+                        <rect width="280" height="180" fill="url(#grid)"/>
+                        <text x="140" y="95" text-anchor="middle" font-size="22" font-weight="bold">ℝ²</text>
+                        <text x="140" y="120" text-anchor="middle" font-size="13">平面（平坦）</text>
+                    </svg>
+                </div>
+                <div>
+                    <h3>多様体</h3>
+                    <p>局所的にℝⁿに見える曲面</p>
+                    <svg width="100%" height="180" viewBox="0 0 280 180">
+                        <ellipse cx="140" cy="90" rx="90" ry="55" fill="#667eea" opacity="0.25" stroke="#2c3e50" stroke-width="2"/>
+                        <ellipse cx="140" cy="90" rx="90" ry="55" fill="none" stroke="#2c3e50" stroke-width="1" stroke-dasharray="4,4"/>
+                        <text x="140" y="95" text-anchor="middle" font-size="22" font-weight="bold">S²</text>
+                        <text x="140" y="120" text-anchor="middle" font-size="13">球面（曲面）</text>
+                    </svg>
+                </div>
+            </div>
+            <div class="box">
+                <h3>「局所的にユークリッド空間」とは？</h3>
+                <svg width="100%" height="140" viewBox="0 0 560 140">
+                    <path d="M 45 90 Q 135 45 225 90" fill="#667eea" opacity="0.25" stroke="#2c3e50" stroke-width="2"/>
+                    <circle cx="135" cy="67" r="4" fill="#e74c3c"/>
+                    <text x="135" y="52" text-anchor="middle" font-size="12">点p</text>
+                    <circle cx="390" cy="67" r="55" fill="none" stroke="#2c3e50" stroke-width="2.5"/>
+                    <rect x="355" y="50" width="70" height="34" fill="url(#grid)" stroke="#2c3e50" stroke-width="2"/>
+                    <circle cx="390" cy="67" r="3" fill="#e74c3c"/>
+                    <text x="390" y="118" text-anchor="middle" font-size="11">拡大すると平面に見える</text>
+                    <path d="M 245 67 L 335 67" stroke="#667eea" stroke-width="3" marker-end="url(#arrow)"/>
+                    <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><polygon points="0 0, 10 3, 0 6" fill="#667eea"/></marker></defs>
+                </svg>
+            </div>
+        </div>
+        
+        <!-- スライド8: 多様体とは何か（2）- 数学的定義 -->
+        <div class="slide">
+            <h2>📐 多様体とは何か（2）- 数学的定義</h2>
+            <div class="box">
+                <h3>定義</h3>
+                <p>位相空間Mが<strong>n次元多様体</strong> ⟺ 各点p∈Mの周りに、ℝⁿと同相な近傍が存在</p>
+            </div>
+            <div class="two-columns">
+                <div class="box">
+                    <h4>座標系（チャート）</h4>
+                    <p>φ: U → ℝⁿ</p>
+                    <p style="font-size: 0.95em;">（Uは開集合）</p>
+                    <p style="margin-top: 12px;">「チャート」= 地図のようなもの</p>
+                </div>
+                <div class="box">
+                    <h4>座標変換</h4>
+                    <p>異なるチャート間の関係</p>
+                    <p style="font-size: 0.95em; margin-top: 12px;">地球全体を1枚の地図で表せないのと同じ</p>
+                </div>
+            </div>
+            <svg width="100%" height="200" viewBox="0 0 520 200">
+                <ellipse cx="150" cy="100" rx="80" ry="50" fill="#667eea" opacity="0.2" stroke="#2c3e50" stroke-width="2"/>
+                <text x="150" y="105" text-anchor="middle" font-size="16" font-weight="bold">多様体 M</text>
+                <rect x="60" y="65" width="60" height="40" fill="#fda085" opacity="0.3" stroke="#e74c3c" stroke-width="2"/>
+                <text x="90" y="85" text-anchor="middle" font-size="11">開集合U</text>
+                <path d="M 125 95 L 240 100" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow)"/>
+                <text x="180" y="90" text-anchor="middle" font-size="13">φ</text>
+                <rect x="270" y="70" width="90" height="60" fill="url(#grid)" stroke="#2c3e50" stroke-width="2"/>
+                <text x="315" y="150" text-anchor="middle" font-size="13">ℝⁿ</text>
+            </svg>
+            <p style="text-align: center; color: #7f8c8d; margin-top: 15px;">複数のチャートをつなぎ合わせて多様体を記述</p>
+        </div>
+        
+        <!-- スライド9: 確率分布の多様体（1） -->
+        <div class="slide">
+            <h2>📊 確率分布の多様体（1）- 指数型分布族</h2>
+            <div class="box">
+                <h3>指数型分布族の定義</h3>
+                <div class="formula">
+                    p(x|θ) = exp(θᵀT(x) - ψ(θ)) h(x)
+                </div>
+                <ul style="margin-top: 12px;">
+                    <li><strong>θ</strong> = 自然パラメータ</li>
+                    <li><strong>T(x)</strong> = 十分統計量</li>
+                    <li><strong>ψ(θ)</strong> = 対数分配関数</li>
+                </ul>
+            </div>
+            <div class="grid">
+                <div class="card">
+                    <h4>正規分布</h4>
+                    <p>N(μ, σ²)</p>
+                </div>
+                <div class="card">
+                    <h4>ポアソン分布</h4>
+                    <p>Pois(λ)</p>
+                </div>
+                <div class="card">
+                    <h4>ベルヌーイ分布</h4>
+                    <p>Bern(p)</p>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 20px; color: #667eea; font-weight: bold;">指数型分布族は情報幾何学で最も扱いやすい！</p>
+        </div>
+        
+        <!-- スライド10: 確率分布の多様体（2） -->
+        <div class="slide">
+            <h2>📊 確率分布の多様体（2）- パラメータ空間</h2>
+            <div class="box">
+                <h3>パラメータ空間 Θ</h3>
+                <ul>
+                    <li>θ ∈ Θ ⊂ ℝⁿ</li>
+                    <li>各θが1つの確率分布 p(x|θ) に対応</li>
+                    <li>Θ全体が「統計多様体」を形成</li>
+                </ul>
+            </div>
+            <svg width="100%" height="320" viewBox="0 0 540 320">
+                <ellipse cx="150" cy="160" rx="110" ry="70" fill="#667eea" opacity="0.2" stroke="#2c3e50" stroke-width="2"/>
+                <text x="150" y="170" text-anchor="middle" font-size="16" font-weight="bold">パラメータ空間 Θ</text>
+                <circle cx="100" cy="140" r="5" fill="#e74c3c"/>
+                <text x="100" y="125" text-anchor="middle" font-size="11">θ₁</text>
+                <circle cx="180" cy="180" r="5" fill="#e74c3c"/>
+                <text x="180" y="200" text-anchor="middle" font-size="11">θ₂</text>
+                <path d="M 220 160 L 300 120" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow)"/>
+                <path d="M 220 160 L 300 200" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrow)"/>
+                <g transform="translate(320, 80)">
+                    <path d="M 0 0 Q 40 -20 80 0 Q 40 20 0 0" fill="#fda085" opacity="0.3" stroke="#e74c3c" stroke-width="1.5"/>
+                    <text x="40" y="-30" text-anchor="middle" font-size="11">p(x|θ₁)</text>
+                </g>
+                <g transform="translate(320, 180)">
+                    <path d="M 0 0 Q 40 -30 80 0 Q 40 15 0 0" fill="#fda085" opacity="0.3" stroke="#e74c3c" stroke-width="1.5"/>
+                    <text x="40" y="25" text-anchor="middle" font-size="11">p(x|θ₂)</text>
+                </g>
+            </svg>
+            <p style="text-align: center; color: #764ba2; font-weight: bold;">この「変化の様子」を幾何学的に捉える！</p>
+        </div>
+        
+        <!-- スライド11: 接ベクトルと接空間（1） -->
+        <div class="slide">
+            <h2>↗️ 接ベクトルと接空間（1）- 直感的理解</h2>
+            <div class="box">
+                <h3>接ベクトル</h3>
+                <p>多様体上の点pでの「速度ベクトル」</p>
+                <p>曲面上の点から出発する矢印をイメージ</p>
+            </div>
+            <svg width="100%" height="300" viewBox="0 0 540 300">
+                <ellipse cx="180" cy="150" rx="120" ry="75" fill="#4a90e2" opacity="0.2" stroke="#2c3e50" stroke-width="2"/>
+                <circle cx="180" cy="120" r="6" fill="#e74c3c" class="pulse"/>
+                <text x="180" y="105" text-anchor="middle" font-size="13" font-weight="bold">点 p</text>
+                <line x1="180" y1="120" x2="250" y2="100" stroke="#764ba2" stroke-width="3" marker-end="url(#arrow)"/>
+                <text x="270" y="95" text-anchor="start" font-size="13" fill="#764ba2" font-weight="bold">v ∈ T_p M</text>
+                <line x1="180" y1="120" x2="220" y2="160" stroke="#764ba2" stroke-width="3" marker-end="url(#arrow)"/>
+                <line x1="180" y1="120" x2="140" y2="140" stroke="#764ba2" stroke-width="3" marker-end="url(#arrow)"/>
+                <ellipse cx="180" cy="120" rx="100" ry="20" fill="#f6d365" opacity="0.3" stroke="#f39c12" stroke-width="2" stroke-dasharray="4,4"/>
+                <text x="370" cy="170" text-anchor="middle" font-size="14" font-weight="bold">接空間 T_p M</text>
+                <text x="370" y="190" text-anchor="middle" font-size="11">(接ベクトル全体)</text>
+            </svg>
+            <div class="box">
+                <p><strong>直感：</strong>接空間 = その点での「動ける方向」全体</p>
+                <p>2次元球面なら、接空間も2次元平面</p>
+            </div>
+        </div>
+        
+        <!-- スライド12: 接ベクトルと接空間（2） -->
+        <div class="slide">
+            <h2>↗️ 接ベクトルと接空間（2）- 確率分布での意味</h2>
+            <div class="box">
+                <h3>統計多様体での接ベクトル</h3>
+                <p>接ベクトル = パラメータの変化方向</p>
+                <div class="formula">
+                    v = ∂p/∂θⁱ
+                </div>
+                <p style="text-align: center;">(i番目のパラメータ方向の偏微分)</p>
+            </div>
+            <div class="box">
+                <h3>接空間</h3>
+                <div class="formula">
+                    T_p M = {線形結合 Σ vⁱ ∂/∂θⁱ}
+                </div>
+            </div>
+            <svg width="100%" height="180" viewBox="0 0 480 180">
+                <rect x="40" y="40" width="180" height="120" fill="url(#grid)" stroke="#2c3e50" stroke-width="2"/>
+                <text x="130" y="30" text-anchor="middle" font-size="13">パラメータ空間 Θ</text>
+                <circle cx="110" cy="90" r="5" fill="#e74c3c"/>
+                <text x="110" y="75" text-anchor="middle" font-size="11">θ</text>
+                <line x1="110" y1="90" x2="170" y2="70" stroke="#764ba2" stroke-width="2.5" marker-end="url(#arrow)"/>
+                <text x="180" y="65" text-anchor="start" font-size="11" fill="#764ba2">∂/∂θ¹</text>
+                <line x1="110" y1="90" x2="140" y2="135" stroke="#764ba2" stroke-width="2.5" marker-end="url(#arrow)"/>
+                <text x="145" y="145" text-anchor="start" font-size="11" fill="#764ba2">∂/∂θ²</text>
+            </svg>
+            <p style="text-align: center; color: #667eea; font-weight: bold; margin-top: 15px;">接ベクトル = 分布がどの方向に変化するか → 後で「自然勾配」につながる</p>
+        </div>
+        
+        <!-- スライド13: リーマン計量とは（1） -->
+        <div class="slide">
+            <h2>📏 リーマン計量とは（1）- 内積の一般化</h2>
+            <div class="two-columns">
+                <div class="box">
+                    <h4>ℝⁿでの内積</h4>
+                    <div class="formula" style="font-size: 1em;">
+                        v·w = Σ vⁱwⁱ
+                    </div>
+                    <p style="font-size: 0.95em;">ベクトルの「長さ」と「角度」を測る</p>
+                </div>
+                <div class="box">
+                    <h4>多様体での内積</h4>
+                    <div class="formula" style="font-size: 1em;">
+                        g_p(v, w)
+                    </div>
+                    <p style="font-size: 0.95em;">リーマン計量 = 内積の一般化</p>
+                </div>
+            </div>
+            <div class="box">
+                <h3>重要な性質</h3>
+                <ul>
+                    <li>各点pで内積g_p(v, w)が定義される</li>
+                    <li>点によって内積が変わる（空間が曲がっている証拠）</li>
+                    <li>リーマン計量があれば「距離」が定義できる</li>
+                </ul>
+            </div>
+            <p style="text-align: center; margin-top: 20px; font-size: 1.15em; color: #e74c3c; font-weight: bold;">
+                でも、どの計量を選ぶか？ → Fisher情報計量
+            </p>
+        </div>
+        
+        <!-- スライド14: Fisher情報計量への橋渡し -->
+        <div class="slide">
+            <h2>🌉 Fisher情報計量への橋渡し</h2>
+            <div class="box" style="background: linear-gradient(120deg, #f6d365 0%, #fda085 100%); color: #2c3e50;">
+                <h3>確率分布の多様体には「自然な計量」が存在</h3>
+                <p style="font-size: 1.2em; text-align: center; margin-top: 15px; font-weight: bold;">
+                    それが Fisher情報計量
+                </p>
+            </div>
+            <div class="box">
+                <h3>なぜ「自然」なのか？</h3>
+                <ul>
+                    <li>確率分布の「区別しやすさ」を表現</li>
+                    <li>座標変換に対して不変（どの座標系でも同じ）</li>
+                    <li>統計的推定理論と整合的</li>
+                </ul>
+            </div>
+            <svg width="100%" height="200" viewBox="0 0 540 200">
+                <ellipse cx="150" cy="100" rx="100" ry="60" fill="#667eea" opacity="0.2" stroke="#2c3e50" stroke-width="2"/>
+                <text x="150" y="105" text-anchor="middle" font-size="14" font-weight="bold">確率分布の多様体</text>
+                <path d="M 250 100 L 340 100" stroke="#e74c3c" stroke-width="4" marker-end="url(#arrow)"/>
+                <text x="295" y="90" text-anchor="middle" font-size="13" fill="#e74c3c" font-weight="bold">Fisher計量</text>
+                <rect x="360" y="60" width="140" height="80" fill="#f8f9fa" stroke="#667eea" stroke-width="3" rx="8"/>
+                <text x="430" y="95" text-anchor="middle" font-size="14" font-weight="bold">真の「距離」</text>
+                <text x="430" y="115" text-anchor="middle" font-size="14" font-weight="bold">が定義できる！</text>
+            </svg>
+        </div>
+        
+        <!-- スライド15: 多様体の例（1） -->
+        <div class="slide">
+            <h2>📊 多様体の例（1）- 1次元正規分布</h2>
+            <div class="box">
+                <h3>N(μ, σ²)：μを固定、σだけ動かす</h3>
+                <p>→ 1次元多様体</p>
+                <p>パラメータ空間：Θ = {σ | σ>0} ≅ ℝ₊</p>
+            </div>
+            <canvas id="normal1d" width="900" height="280" style="width: 100%; max-height: 280px;"></canvas>
+            <div class="controls">
+                <div class="slider-container">
+                    <label>標準偏差 σ: <span id="sig1dVal">1.0</span></label>
+                    <input type="range" id="sig1dSlide" min="0.3" max="2.5" step="0.1" value="1">
+                </div>
+            </div>
+            <p style="text-align: center; color: #667eea; margin-top: 15px; font-weight: bold;">
+                σが変わると分布の広がりが変わる様子を観察
+            </p>
+        </div>
+        
+        <!-- スライド16: 多様体の例（2） -->
+        <div class="slide">
+            <h2>📊 多様体の例（2）- 2次元正規分布</h2>
+            <div class="box">
+                <h3>N(μ, σ²)：μとσ両方動かす</h3>
+                <p>→ 2次元多様体</p>
+                <p>パラメータ空間：Θ = {(μ, σ) | μ∈ℝ, σ>0} ≅ ℝ × ℝ₊</p>
+            </div>
+            <svg width="100%" height="300" viewBox="0 0 540 300">
+                <rect x="40" y="40" width="220" height="180" fill="url(#grid)" stroke="#2c3e50" stroke-width="2"/>
+                <text x="150" y="30" text-anchor="middle" font-size="13">パラメータ空間 (μ, σ)</text>
+                <text x="20" y="135" text-anchor="middle" font-size="12">σ</text>
+                <text x="150" y="235" text-anchor="middle" font-size="12">μ</text>
+                <circle cx="100" cy="100" r="4" fill="#e74c3c"/>
+                <circle cx="180" cy="140" r="4" fill="#e74c3c"/>
+                <circle cx="140" cy="170" r="4" fill="#e74c3c"/>
+                <g transform="translate(300, 80)">
+                    <path d="M 0 20 Q 30 0 60 20 Q 30 30 0 20" fill="#667eea" opacity="0.3" stroke="#2c3e50" stroke-width="1.5"/>
+                    <text x="30" y="55" text-anchor="middle" font-size="10">N(μ₁,σ₁²)</text>
+                </g>
+                <g transform="translate(300, 150)">
+                    <path d="M 0 20 Q 30 -10 60 20 Q 30 35 0 20" fill="#764ba2" opacity="0.3" stroke="#2c3e50" stroke-width="1.5"/>
+                    <text x="30" y="55" text-anchor="middle" font-size="10">N(μ₂,σ₂²)</text>
+                </g>
+                <g transform="translate(390, 80)">
+                    <path d="M 0 20 Q 30 5 60 20 Q 30 28 0 20" fill="#f39c12" opacity="0.3" stroke="#2c3e50" stroke-width="1.5"/>
+                    <text x="30" y="50" text-anchor="middle" font-size="10">N(μ₃,σ₃²)</text>
+                </g>
+            </svg>
+            <p style="text-align: center; color: #764ba2; margin-top: 15px; font-weight: bold;">
+                演習ではこの2次元の例を使います
+            </p>
+        </div>
+        
+        <!-- スライド17: Fisher情報とは（1） -->
+        <div class="slide">
+            <h2>ℹ️ Fisher情報とは（1）- 動機</h2>
+            <div class="box">
+                <h3>問い</h3>
+                <p>2つの確率分布 p(x|θ₁) と p(x|θ₂) をどう比較するか？</p>
+            </div>
+            <div class="two-columns">
+                <div class="box">
+                    <h4>KLダイバージェンス</h4>
+                    <div class="formula" style="font-size: 0.9em;">
+                        D_KL(p||q) = ∫ p(x) log(p(x)/q(x)) dx
+                    </div>
+                </div>
+                <div class="box" style="border-left-color: #e74c3c;">
+                    <h4>問題点</h4>
+                    <ul>
+                        <li>❌ 対称ではない</li>
+                        <li>❌ 三角不等式 ✗</li>
+                        <li>❌ 「距離」ではない</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="box" style="background: linear-gradient(120deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h3>解決策</h3>
+                <p style="font-size: 1.15em;">Fisher情報 = 「無限小のKLダイバージェンス」から導出</p>
+            </div>
+        </div>
+        
+        <!-- スライド18: Fisher情報とは（2） -->
+        <div class="slide">
+            <h2>ℹ️ Fisher情報とは（2）- 定義</h2>
+            <div class="box">
+                <h3>Fisher情報行列</h3>
+                <div class="formula">
+                    I(θ) = E[(∂log p/∂θ)(∂log p/∂θ)ᵀ]
+                </div>
+                <p style="text-align: center; margin-top: 12px;">成分ごと：</p>
+                <div class="formula">
+                    I<sub>ij</sub>(θ) = E[∂log p/∂θⁱ · ∂log p/∂θʲ]
+                </div>
+            </div>
+            <div class="box">
+                <h3>別表現（一定条件下）</h3>
+                <div class="formula">
+                    I<sub>ij</sub>(θ) = -E[∂²log p/∂θⁱ∂θʲ]
+                </div>
+            </div>
+            <div class="box">
+                <h3>スコア関数</h3>
+                <p>s(x;θ) = ∂log p(x|θ)/∂θ</p>
+                <p style="margin-top: 10px;"><strong>Fisher情報 = スコア関数の共分散行列</strong></p>
+            </div>
+        </div>
+        
+        <!-- スライド19: Fisher情報の統計的意味 -->
+        <div class="slide">
+            <h2>📊 Fisher情報の統計的意味</h2>
+            <div class="box">
+                <h3>Cramér-Rao下界</h3>
+                <div class="formula">
+                    Var(θ̂) ≥ 1/I(θ)
+                </div>
+                <p style="text-align: center; margin-top: 12px;">どんな不偏推定量θ̂も、この分散以下にはできない</p>
+            </div>
+            <div class="two-columns">
+                <div class="box">
+                    <h4>Fisher情報が大きい</h4>
+                    <p>→ 分散の下界が小さい</p>
+                    <p class="emphasis">→ パラメータ推定がしやすい</p>
+                </div>
+                <div class="box">
+                    <h4>Fisher情報が小さい</h4>
+                    <p>→ 分散の下界が大きい</p>
+                    <p class="emphasis">→ パラメータ推定が難しい</p>
+                </div>
+            </div>
+            <svg width="100%" height="180" viewBox="0 0 540 180">
+                <g transform="translate(100, 90)">
+                    <path d="M 0 0 Q 40 -30 80 0 Q 40 20 0 0" fill="#667eea" opacity="0.5" stroke="#2c3e50" stroke-width="2"/>
+                    <path d="M 10 0 Q 40 -25 70 0 Q 40 18 10 0" fill="#764ba2" opacity="0.5" stroke="#2c3e50" stroke-width="2" stroke-dasharray="3,3"/>
+                    <text x="40" y="50" text-anchor="middle" font-size="12">区別しにくい</text>
+                    <text x="40" y="65" text-anchor="middle" font-size="11">(Fisher情報小)</text>
+                </g>
+                <g transform="translate(340, 90)">
+                    <path d="M -10 0 Q 30 -35 70 0 Q 30 25 -10 0" fill="#667eea" opacity="0.5" stroke="#2c3e50" stroke-width="2"/>
+                    <path d="M 50 0 Q 80 -30 110 0 Q 80 20 50 0" fill="#764ba2" opacity="0.5" stroke="#2c3e50" stroke-width="2" stroke-dasharray="3,3"/>
+                    <text x="50" y="50" text-anchor="middle" font-size="12">区別しやすい</text>
+                    <text x="50" y="65" text-anchor="middle" font-size="11">(Fisher情報大)</text>
+                </g>
+            </svg>
+            <p style="text-align: center; color: #667eea; font-weight: bold; margin-top: 15px;">
+                「分布の区別しやすさ」を定量化
+            </p>
+        </div>
+        
+        <!-- スライド20: Fisher情報計量の定義 -->
+        <div class="slide">
+            <h2>📏 Fisher情報計量の定義</h2>
+            <div class="box" style="background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);">
+                <h3>Fisher情報計量（Fisher-Rao計量）</h3>
+                <div class="formula">
+                    g_Fisher(v, w) = E[v(log p) · w(log p)]
+                </div>
+                <p style="text-align: center; margin-top: 12px;">行列表現：[g<sub>ij</sub>] = I(θ)</p>
+            </div>
+            <div class="box">
+                <h3>Chentsovの定理</h3>
+                <p>以下の2つの性質を要求すると、Fisher計量が<strong>一意に</strong>決まる：</p>
+                <ul>
+                    <li><strong>座標不変性</strong>：パラメータの変換に対して不変</li>
+                    <li><strong>情報単調性</strong>：データ処理で減少しない</li>
+                </ul>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.2em; color: #e74c3c; font-weight: bold;">
+                Fisher計量は単なる選択ではなく「唯一の自然な計量」！
+            </p>
+        </div>
+        
+        <!-- スライド21: なぜ"真の距離"なのか -->
+        <div class="slide">
+            <h2>✅ なぜ"真の距離"なのか</h2>
+            <div class="box">
+                <h3>距離の公理（3つの条件）</h3>
+                <ul>
+                    <li><strong>①非負性：</strong> d(p, q) ≥ 0, 等号成立 ⟺ p = q</li>
+                    <li><strong>②対称性：</strong> d(p, q) = d(q, p)</li>
+                    <li><strong>③三角不等式：</strong> d(p, r) ≤ d(p, q) + d(q, r)</li>
+                </ul>
+            </div>
+            <svg width="100%" height="220" viewBox="0 0 540 220">
+                <circle cx="100" cy="110" r="30" fill="#667eea" opacity="0.3" stroke="#2c3e50" stroke-width="2"/>
+                <circle cx="250" cy="110" r="30" fill="#764ba2" opacity="0.3" stroke="#2c3e50" stroke-width="2"/>
+                <circle cx="440" cy="110" r="30" fill="#f39c12" opacity="0.3" stroke="#2c3e50" stroke-width="2"/>
+                <text x="100" y="115" text-anchor="middle" font-weight="bold">p</text>
+                <text x="250" y="115" text-anchor="middle" font-weight="bold">q</text>
+                <text x="440" y="115" text-anchor="middle" font-weight="bold">r</text>
+                <line x1="130" y1="110" x2="220" y2="110" stroke="#e74c3c" stroke-width="3"/>
+                <text x="175" y="100" text-anchor="middle" font-size="13" fill="#e74c3c">d(p,q)</text>
+                <line x1="280" y1="110" x2="410" y2="110" stroke="#e74c3c" stroke-width="3"/>
+                <text x="345" y="100" text-anchor="middle" font-size="13" fill="#e74c3c">d(q,r)</text>
+                <path d="M 100 140 Q 270 190 440 140" stroke="#667eea" stroke-width="3" stroke-dasharray="5,5"/>
+                <text x="270" y="200" text-anchor="middle" font-size="13" fill="#667eea">d(p,r) ≤ d(p,q)+d(q,r)</text>
+            </svg>
+            <div class="box" style="border-left-color: #e74c3c;">
+                <h3>Fisher-Rao距離</h3>
+                <p>Fisher情報計量から定義される距離は、すべての公理を満たす</p>
+                <div class="formula">
+                    d<sub>FR</sub>(p, q) = ∫₀¹ √(g(γ̇, γ̇)) dt
+                </div>
+                <p style="text-align: center;">(測地線γに沿って積分)</p>
+            </div>
+            <p style="text-align: center; margin-top: 20px; font-size: 1.15em; color: #667eea; font-weight: bold;">
+                KLダイバージェンスとの違い：Fisher-Rao距離は真の「距離」
+            </p>
+        </div>
+        
+        <!-- スライド22: 具体例（1）- 1次元正規分布のFisher情報 -->
+        <div class="slide">
+            <h2>🔢 具体例（1）- 1次元正規分布のFisher情報</h2>
+            <div class="box">
+                <h3>設定</h3>
+                <p>N(μ, σ²) でσを固定、μだけ動かす場合</p>
+            </div>
+            <div class="box">
+                <h3>計算</h3>
+                <div class="formula">
+                    log p(x|μ) = -(x-μ)²/(2σ²) + 定数
+                </div>
+                <div class="formula">
+                    ∂log p/∂μ = (x-μ)/σ²
+                </div>
+                <div class="formula">
+                    I(μ) = E[(x-μ)²]/σ⁴ = σ²/σ⁴ = 1/σ²
+                </div>
+            </div>
+            <svg width="100%" height="200" viewBox="0 0 540 200">
+                <g transform="translate(80, 100)">
+                    <path d="M 0 0 Q 35 -40 70 0 Q 35 25 0 0" fill="#667eea" opacity="0.4" stroke="#2c3e50" stroke-width="2"/>
+                    <text x="35" y="45" text-anchor="middle" font-size="12">σ小</text>
+                    <text x="35" y="60" text-anchor="middle" font-size="11" fill="#e74c3c">I(μ) 大</text>
+                </g>
+                <g transform="translate(320, 100)">
+                    <path d="M -20 0 Q 50 -25 120 0 Q 50 18 -20 0" fill="#764ba2" opacity="0.4" stroke="#2c3e50" stroke-width="2"/>
+                    <text x="50" y="35" text-anchor="middle" font-size="12">σ大</text>
+                    <text x="50" y="50" text-anchor="middle" font-size="11" fill="#e74c3c">I(μ) 小</text>
+                </g>
+            </svg>
+            <div class="box" style="border-left-color: #667eea;">
+                <h3>直感的な意味</h3>
+                <p class="emphasis">σが小さいほどFisher情報が大きい</p>
+                <p>→ 分布が尖っているほど、位置（μ）を推定しやすい</p>
+            </div>
+        </div>
+        
+        <!-- スライド23: 具体例（2）- 2次元正規分布のFisher情報 -->
+        <div class="slide">
+            <h2>🔢 具体例（2）- 2次元正規分布のFisher情報</h2>
+            <div class="box">
+                <h3>設定</h3>
+                <p>N(μ, σ²) でμとσ両方動かす場合</p>
+            </div>
+            <div class="box">
+                <h3>Fisher情報行列</h3>
+                <div class="formula">
+                    I(μ, σ) = [1/σ²    0   ]<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0      2/σ²]
+                </div>
+            </div>
+            <svg width="100%" height="240" viewBox="0 0 540 240">
+                <text x="270" y="30" text-anchor="middle" font-size="15" font-weight="bold">Fisher情報行列の視覚化</text>
+                <rect x="180" y="60" width="80" height="80" fill="#667eea" opacity="0.6" stroke="#2c3e50" stroke-width="2"/>
+                <text x="220" y="105" text-anchor="middle" font-size="18" fill="white" font-weight="bold">1/σ²</text>
+                <rect x="280" y="60" width="80" height="80" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2"/>
+                <text x="320" y="105" text-anchor="middle" font-size="18">0</text>
+                <rect x="180" y="160" width="80" height="80" fill="#ecf0f1" stroke="#2c3e50" stroke-width="2"/>
+                <text x="220" y="205" text-anchor="middle" font-size="18">0</text>
+                <rect x="280" y="160" width="80" height="80" fill="#764ba2" opacity="0.6" stroke="#2c3e50" stroke-width="2"/>
+                <text x="320" y="205" text-anchor="middle" font-size="18" fill="white" font-weight="bold">2/σ²</text>
+                <text x="150" y="105" text-anchor="end" font-size="13">μ</text>
+                <text x="150" y="205" text-anchor="end" font-size="13">σ</text>
+            </svg>
+            <div class="box" style="border-left-color: #e74c3c;">
+                <h3>重要な観察</h3>
+                <ul>
+                    <li>非対角成分が0 → <strong>μとσは情報幾何学的に直交</strong></li>
+                    <li>2つのパラメータが独立に推定できる</li>
+                    <li>演習でこの計算をやってみます</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- スライド24: Fisher計量の幾何学的解釈 -->
+        <div class="slide">
+            <h2>📐 Fisher計量の幾何学的解釈</h2>
+            <div class="two-columns">
+                <div class="box">
+                    <h4>ベクトルの長さ</h4>
+                    <div class="formula" style="font-size: 1em;">
+                        ||v||² = g<sub>ij</sub> vⁱ vʲ
+                    </div>
+                    <p style="font-size: 0.95em; margin-top: 10px;">Fisher計量で測った長さ</p>
+                </div>
+                <div class="box">
+                    <h4>ベクトルの角度</h4>
+                    <div class="formula" style="font-size: 1em;">
+                        cos θ = g(v,w)/(||v|| ||w||)
+                    </div>
+                    <p style="font-size: 0.95em; margin-top: 10px;">2つのベクトルの角度</p>
+                </div>
+            </div>
+            <svg width="100%" height="280" viewBox="0 0 540 280">
+                <ellipse cx="270" cy="140" rx="180" ry="100" fill="#667eea" opacity="0.15" stroke="#2c3e50" stroke-width="2"/>
+                <text x="270" y="165" text-anchor="middle" font-size="14" font-weight="bold">多様体 M</text>
+                <circle cx="200" cy="120" r="5" fill="#e74c3c" class="pulse"/>
+                <text x="200" y="105" text-anchor="middle" font-size="12" font-weight="bold">点 p</text>
+                <line x1="200" y1="120" x2="300" y2="80" stroke="#764ba2" stroke-width="3" marker-end="url(#arrow)"/>
+                <text x="310" y="75" text-anchor="start" font-size="13" fill="#764ba2" font-weight="bold">v</text>
+                <line x1="200" y1="120" x2="260" y2="180" stroke="#f39c12" stroke-width="3" marker-end="url(#arrow)"/>
+                <text x="270" y="190" text-anchor="start" font-size="13" fill="#f39c12" font-weight="bold">w</text>
+                <path d="M 220 125 Q 230 135 225 145" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <text x="235" y="140" text-anchor="start" font-size="12">θ</text>
+                <text x="250" y="100" text-anchor="middle" font-size="11" fill="#764ba2">||v||</text>
+                <text x="230" y="155" text-anchor="middle" font-size="11" fill="#f39c12">||w||</text>
+            </svg>
+            <div class="box">
+                <h3>曲率</h3>
+                <p>リーマン曲率テンソルで表現（詳細は次回以降）</p>
+                <p style="margin-top: 10px;"><strong>曲率 = 空間の「曲がり具合」を定量化</strong></p>
+            </div>
+        </div>
+        
+        <!-- スライド25: Fisher計量の性質 -->
+        <div class="slide">
+            <h2>⭐ Fisher計量の性質</h2>
+            <div class="grid">
+                <div class="card" style="border-top-color: #667eea;">
+                    <h4>①正定値性</h4>
+                    <div class="formula" style="font-size: 0.95em;">
+                        g(v, v) > 0
+                    </div>
+                    <p style="font-size: 0.95em;">for v ≠ 0</p>
+                    <p style="font-size: 0.9em; margin-top: 8px;">ゼロベクトル以外は必ず正の長さを持つ</p>
+                </div>
+                <div class="card" style="border-top-color: #764ba2;">
+                    <h4>②対称性</h4>
+                    <div class="formula" style="font-size: 0.95em;">
+                        g(v, w) = g(w, v)
+                    </div>
+                    <p style="font-size: 0.9em; margin-top: 8px;">内積の順序を入れ替えても同じ</p>
+                </div>
+                <div class="card" style="border-top-color: #f39c12;">
+                    <h4>③座標不変性</h4>
+                    <p style="font-size: 0.95em;">パラメータ変換</p>
+                    <p style="font-size: 0.95em;">θ → φ(θ)</p>
+                    <p style="font-size: 0.9em; margin-top: 8px;">に対して不変</p>
+                </div>
+                <div class="card" style="border-top-color: #e74c3c;">
+                    <h4>④情報単調性</h4>
+                    <p style="font-size: 0.95em;">データ処理で</p>
+                    <p style="font-size: 0.95em;">Fisher情報は</p>
+                    <p style="font-size: 0.9em; margin-top: 8px;">減少しない</p>
+                </div>
+            </div>
+            <div class="box" style="margin-top: 25px; background: linear-gradient(120deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h3>Chentsovの定理</h3>
+                <p style="font-size: 1.1em;">③座標不変性 と ④情報単調性 を要求すると、</p>
+                <p style="font-size: 1.2em; text-align: center; margin-top: 12px; font-weight: bold;">Fisher計量が一意に導出される</p>
+            </div>
+        </div>
+        
+        <!-- スライド26: 創造過程への接続（予告） -->
+        <div class="slide">
+            <h2>🔗 創造過程への接続（予告）</h2>
+            <div class="box" style="background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);">
+                <h3>今日学んだことが、どう創造過程につながるのか</h3>
+            </div>
+            <div class="flow-diagram" style="margin-top: 30px;">
+                <div class="flow-step" style="border-left-color: #667eea;">
+                    <h4>多様体</h4>
+                    <p style="font-size: 0.9em;">確率分布の空間</p>
+                    <div style="margin-top: 10px; font-size: 0.85em;">↓</div>
+                    <p style="font-size: 0.85em; color: #667eea;">発散段階で探索</p>
+                </div>
+                <div class="arrow-right">→</div>
+                <div class="flow-step" style="border-left-color: #764ba2;">
+                    <h4>Fisher計量</h4>
+                    <p style="font-size: 0.9em;">真の距離</p>
+                    <div style="margin-top: 10px; font-size: 0.85em;">↓</div>
+                    <p style="font-size: 0.85em; color: #764ba2;">収束の評価基準</p>
+                </div>
+                <div class="arrow-right">→</div>
+                <div class="flow-step" style="border-left-color: #f39c12;">
+                    <h4>測地線</h4>
+                    <p style="font-size: 0.9em;">最短経路</p>
+                    <div style="margin-top: 10px; font-size: 0.85em;">↓</div>
+                    <p style="font-size: 0.85em; color: #f39c12;">自然勾配=最適経路</p>
+                </div>
+            </div>
+            <div class="box" style="margin-top: 30px; border-left-color: #764ba2;">
+                <h3>自然勾配降下法</h3>
+                <div class="formula">
+                    θ<sub>t+1</sub> = θ<sub>t</sub> - η G⁻¹∇f(θ<sub>t</sub>)
+                </div>
+                <p style="text-align: center; margin-top: 10px;">G = Fisher情報行列</p>
+                <p class="emphasis" style="text-align: center; margin-top: 15px;">
+                    これは「測地線方向への最急降下」= 創造過程の収束段階
+                </p>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.2em; color: #667eea; font-weight: bold;">
+                次回（第2回）で詳しく学びます！
+            </p>
+        </div>
+        
+        <!-- スライド27: 測地線とは（1）- 平面での直線 -->
+        <div class="slide">
+            <h2>➡️ 測地線とは（1）- 平面での直線</h2>
+            <div class="box">
+                <h3>ユークリッド空間 ℝⁿ での最短経路</h3>
+                <p>2点間の最短経路 = 直線</p>
+            </div>
+            <svg width="100%" height="300" viewBox="0 0 540 300">
+                <defs>
+                    <pattern id="grid2" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#d3d3d3" stroke-width="0.5"/>
+                    </pattern>
+                </defs>
+                <rect x="50" y="50" width="440" height="200" fill="url(#grid2)" stroke="#2c3e50" stroke-width="2"/>
+                <circle cx="120" cy="150" r="8" fill="#e74c3c" class="pulse"/>
+                <text x="120" y="135" text-anchor="middle" font-size="13" font-weight="bold">A</text>
+                <circle cx="420" cy="100" r="8" fill="#e74c3c" class="pulse"/>
+                <text x="420" y="85" text-anchor="middle" font-size="13" font-weight="bold">B</text>
+                <line x1="120" y1="150" x2="420" y2="100" stroke="#667eea" stroke-width="4"/>
+                <text x="270" y="115" text-anchor="middle" font-size="14" fill="#667eea" font-weight="bold">直線（測地線）</text>
+                <path d="M 120 150 Q 200 200 270 180 Q 340 160 420 100" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                <text x="270" y="220" text-anchor="middle" font-size="12" fill="#7f8c8d">曲線（より長い）</text>
+            </svg>
+            <div class="box">
+                <h3>直線の方程式</h3>
+                <div class="formula">
+                    γ(t) = p + tv
+                </div>
+                <p style="text-align: center; margin-top: 10px;">p = 始点, v = 方向ベクトル</p>
+                <p style="text-align: center; margin-top: 15px; font-weight: bold;">「加速度ゼロ」で進む経路</p>
+            </div>
+        </div>
+        
+        <!-- スライド28: 測地線とは（2）- 曲面での定義 -->
+        <div class="slide">
+            <h2>➡️ 測地線とは（2）- 曲面での定義</h2>
+            <div class="box">
+                <h3>測地線の定義</h3>
+                <p>「加速度が曲面に垂直」な経路</p>
+                <p style="margin-top: 10px;">= 曲面に沿って「まっすぐ」進む経路</p>
+            </div>
+            <svg width="100%" height="320" viewBox="0 0 540 320">
+                <ellipse cx="270" cy="160" rx="200" ry="120" fill="#4a90e2" opacity="0.2" stroke="#2c3e50" stroke-width="2"/>
+                <ellipse cx="270" cy="160" rx="200" ry="120" fill="none" stroke="#2c3e50" stroke-width="1" stroke-dasharray="4,4"/>
+                <text x="270" y="190" text-anchor="middle" font-size="14" font-weight="bold">球面 S²</text>
+                <circle cx="170" cy="140" r="7" fill="#e74c3c" class="pulse"/>
+                <text x="170" y="125" text-anchor="middle" font-size="12">A</text>
+                <circle cx="370" cy="180" r="7" fill="#e74c3c" class="pulse"/>
+                <text x="370" y="165" text-anchor="middle" font-size="12">B</text>
+                <path d="M 170 140 Q 270 100 370 180" stroke="#667eea" stroke-width="4" fill="none"/>
+                <text x="270" y="90" text-anchor="middle" font-size="13" fill="#667eea" font-weight="bold">大圏（測地線）</text>
+                <path d="M 170 140 Q 270 170 370 180" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                <text x="270" y="210" text-anchor="middle" font-size="11" fill="#7f8c8d">小圏（非測地線）</text>
+            </svg>
+            <div class="box">
+                <h3>直感</h3>
+                <p>測地線 = 局所的に最短経路</p>
+                <p style="margin-top: 10px;">でも全体的には複数の測地線がある（赤道を通る経路など）</p>
+            </div>
+        </div>
+        
+        <!-- スライド29: 測地線方程式 -->
+        <div class="slide">
+            <h2>🔢 測地線方程式</h2>
+            <div class="box">
+                <h3>測地線方程式（一般形）</h3>
+                <div class="formula">
+                    d²γⁱ/dt² + Σ<sub>jk</sub> Γⁱ<sub>jk</sub> (dγʲ/dt)(dγᵏ/dt) = 0
+                </div>
+                <p style="text-align: center; margin-top: 15px;">Γⁱ<sub>jk</sub> = Christoffel記号（計量gから計算）</p>
+            </div>
+            <div class="box">
+                <h3>Christoffel記号</h3>
+                <div class="formula">
+                    Γⁱ<sub>jk</sub> = (1/2) Σ<sub>l</sub> gⁱˡ (∂g<sub>lj</sub>/∂xᵏ + ∂g<sub>lk</sub>/∂xʲ - ∂g<sub>jk</sub>/∂xˡ)
+                </div>
+                <p style="text-align: center; margin-top: 12px;">計量の微分から計算される</p>
+            </div>
+            <div class="box" style="border-left-color: #667eea;">
+                <h3>直感的な意味</h3>
+                <p>「加速度 = 0」を多様体上で表現した方程式</p>
+                <p style="margin-top: 10px;">平坦な空間（Γⁱ<sub>jk</sub> = 0）では、単純に d²γⁱ/dt² = 0</p>
+            </div>
+            <p style="text-align: center; margin-top: 20px; color: #764ba2; font-weight: bold;">
+                詳細な計算は演習で（正規分布の例）
+            </p>
+        </div>
+        
+        <!-- スライド30: 自然勾配と測地線 -->
+        <div class="slide">
+            <h2>🎯 自然勾配と測地線</h2>
+            <div class="two-columns">
+                <div class="box">
+                    <h4>通常の勾配</h4>
+                    <div class="formula" style="font-size: 0.95em;">
+                        ∇f
+                    </div>
+                    <p style="font-size: 0.9em; margin-top: 10px;">ユークリッド空間での最急降下方向</p>
+                </div>
+                <div class="box" style="border-left-color: #667eea;">
+                    <h4>自然勾配</h4>
+                    <div class="formula" style="font-size: 0.95em;">
+                        ∇̃f = G⁻¹∇f
+                    </div>
+                    <p style="font-size: 0.9em; margin-top: 10px;">G = Fisher情報行列</p>
+                </div>
+            </div>
+            <svg width="100%" height="260" viewBox="0 0 540 260">
+                <ellipse cx="150" cy="130" rx="120" ry="75" fill="#667eea" opacity="0.15" stroke="#2c3e50" stroke-width="2"/>
+                <text x="150" y="155" text-anchor="middle" font-size="12">多様体M</text>
+                <circle cx="120" cy="110" r="5" fill="#e74c3c"/>
+                <text x="120" y="95" text-anchor="middle" font-size="11">θ<sub>t</sub></text>
+                <line x1="120" y1="110" x2="95" y2="140" stroke="#7f8c8d" stroke-width="2.5" marker-end="url(#arrow)" stroke-dasharray="3,3"/>
+                <text x="75" y="155" text-anchor="middle" font-size="10" fill="#7f8c8d">通常の勾配</text>
+                <line x1="120" y1="110" x2="160" y2="125" stroke="#667eea" stroke-width="3" marker-end="url(#arrow)"/>
+                <text x="175" y="135" text-anchor="start" font-size="11" fill="#667eea" font-weight="bold">自然勾配（測地線方向）</text>
+                <ellipse cx="390" cy="130" rx="120" ry="75" fill="#764ba2" opacity="0.15" stroke="#2c3e50" stroke-width="2"/>
+                <text x="390" y="155" text-anchor="middle" font-size="12">多様体M</text>
+                <circle cx="360" cy="110" r="5" fill="#e74c3c"/>
+                <circle cx="400" cy="125" r="5" fill="#e74c3c"/>
+                <circle cx="425" cy="145" r="5" fill="#e74c3c"/>
+                <path d="M 360 110 Q 380 115 400 125 Q 410 133 425 145" stroke="#667eea" stroke-width="3" fill="none"/>
+                <text x="390" y="95" text-anchor="middle" font-size="10" fill="#667eea">最適経路</text>
+            </svg>
+            <div class="box" style="border-left-color: #764ba2;">
+                <h3>自然勾配降下法</h3>
+                <div class="formula">
+                    θ<sub>t+1</sub> = θ<sub>t</sub> - η G⁻¹∇f(θ<sub>t</sub>)
+                </div>
+                <p style="text-align: center; margin-top: 12px; font-weight: bold;">
+                    これは「測地線方向への最急降下」
+                </p>
+            </div>
+            <p style="text-align: center; margin-top: 20px; font-size: 1.1em; color: #e74c3c; font-weight: bold;">
+                創造過程の収束段階で使われる！
+            </p>
+        </div>
+        
+        <!-- スライド31: 測地線距離 -->
+        <div class="slide">
+            <h2>📏 測地線距離</h2>
+            <div class="box">
+                <h3>測地線距離の定義</h3>
+                <div class="formula">
+                    d<sub>g</sub>(p, q) = inf{長さ(γ) | γはpからqへの経路}
+                </div>
+                <p style="text-align: center; margin-top: 15px;">経路γの長さ：</p>
+                <div class="formula">
+                    長さ(γ) = ∫₀¹ √(g(γ̇, γ̇)) dt
+                </div>
+            </div>
+            <svg width="100%" height="240" viewBox="0 0 540 240">
+                <ellipse cx="270" cy="120" rx="180" ry="90" fill="#667eea" opacity="0.15" stroke="#2c3e50" stroke-width="2"/>
+                <circle cx="150" cy="110" r="7" fill="#e74c3c" class="pulse"/>
+                <text x="150" y="95" text-anchor="middle" font-size="13" font-weight="bold">p</text>
+                <circle cx="390" cy="130" r="7" fill="#e74c3c" class="pulse"/>
+                <text x="390" y="115" text-anchor="middle" font-size="13" font-weight="bold">q</text>
+                <path d="M 150 110 Q 270 70 390 130" stroke="#667eea" stroke-width="4" fill="none"/>
+                <text x="270" y="55" text-anchor="middle" font-size="12" fill="#667eea" font-weight="bold">測地線（最短）</text>
+                <path d="M 150 110 Q 200 160 270 155 Q 340 150 390 130" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                <text x="270" y="180" text-anchor="middle" font-size="11" fill="#7f8c8d">他の経路（より長い）</text>
+            </svg>
+            <div class="box" style="border-left-color: #e74c3c;">
+                <h3>Fisher-Rao距離</h3>
+                <p>Fisher計量での測地線距離 = Fisher-Rao距離</p>
+                <p style="margin-top: 12px; font-weight: bold;">真の意味での「分布間の距離」</p>
+                <p style="margin-top: 8px;">機械学習での最適化に応用</p>
+            </div>
+        </div>
+        
+        <!-- スライド32: 指数型分布族での測地線 -->
+        <div class="slide">
+            <h2>📊 指数型分布族での測地線</h2>
+            <div class="box">
+                <h3>指数型分布族の特別な性質</h3>
+                <p>指数型分布族では測地線が解析的に計算可能</p>
+            </div>
+            <div class="two-columns">
+                <div class="box" style="border-left-color: #667eea;">
+                    <h4>自然パラメータ空間 Θ</h4>
+                    <p style="margin-top: 10px;">「直線」が測地線</p>
+                    <div class="formula" style="font-size: 0.9em; margin-top: 10px;">
+                        γ(t) = (1-t)θ₁ + tθ₂
+                    </div>
+                </div>
+                <div class="box" style="border-left-color: #764ba2;">
+                    <h4>期待値パラメータ空間 E</h4>
+                    <p style="margin-top: 10px;">「曲線」になる</p>
+                    <p style="font-size: 0.9em; margin-top: 10px;">双対接続の概念</p>
+                </div>
+            </div>
+            <svg width="100%" height="220" viewBox="0 0 540 220">
+                <g transform="translate(80, 110)">
+                    <rect x="0" y="0" width="160" height="120" fill="url(#grid)" stroke="#2c3e50" stroke-width="2"/>
+                    <text x="80" y="-10" text-anchor="middle" font-size="12" font-weight="bold">自然パラメータ Θ</text>
+                    <circle cx="30" cy="30" r="4" fill="#e74c3c"/>
+                    <circle cx="130" cy="90" r="4" fill="#e74c3c"/>
+                    <line x1="30" y1="30" x2="130" y2="90" stroke="#667eea" stroke-width="3"/>
+                    <text x="80" y="145" text-anchor="middle" font-size="11" fill="#667eea">直線（測地線）</text>
+                </g>
+                <g transform="translate(300, 110)">
+                    <ellipse cx="80" cy="60" rx="90" ry="55" fill="#764ba2" opacity="0.15" stroke="#2c3e50" stroke-width="2"/>
+                    <text x="80" y="-10" text-anchor="middle" font-size="12" font-weight="bold">期待値パラメータ E</text>
+                    <circle cx="30" cy="45" r="4" fill="#e74c3c"/>
+                    <circle cx="130" cy="75" r="4" fill="#e74c3c"/>
+                    <path d="M 30 45 Q 80 35 130 75" stroke="#764ba2" stroke-width="3" fill="none"/>
+                    <text x="80" y="145" text-anchor="middle" font-size="11" fill="#764ba2">曲線（測地線）</text>
+                </g>
+            </svg>
+            <p style="text-align: center; margin-top: 15px; color: #667eea; font-weight: bold;">
+                パラメータ表現によって測地線の形が変わる - 次回詳しく学びます
+            </p>
+        </div>
+        
+        <!-- スライド33: 演習の説明 -->
+        <div class="slide">
+            <h2>✏️ 演習の説明</h2>
+            <div class="box" style="background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);">
+                <h3>課題</h3>
+                <p style="font-size: 1.2em; text-align: center; margin-top: 12px; font-weight: bold;">
+                    N(μ, σ²) のFisher情報行列を計算せよ
+                </p>
+            </div>
+            <div class="box">
+                <h3>ステップ</h3>
+                <ul>
+                    <li><strong>ステップ1：</strong>log p(x|μ, σ) を書き下す</li>
+                    <li><strong>ステップ2：</strong>∂log p/∂μ と ∂log p/∂σ を計算</li>
+                    <li><strong>ステップ3：</strong>Fisher情報 I(μ, σ) を計算</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #667eea;">
+                <h3>目標の答え</h3>
+                <div class="formula">
+                    I(μ, σ) = [1/σ²    0   ]<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0      2/σ²]
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.15em; color: #764ba2; font-weight: bold;">
+                手を動かして計算することが理解の鍵！<br>
+                時間：5分
+            </p>
+        </div>
+        
+        <!-- スライド34: 演習の解答（1） -->
+        <div class="slide">
+            <h2>✅ 演習の解答（1）- log p の計算</h2>
+            <div class="box">
+                <h3>正規分布の確率密度関数</h3>
+                <div class="formula">
+                    p(x|μ, σ) = (1/√(2πσ²)) exp(-(x-μ)²/(2σ²))
+                </div>
+            </div>
+            <div class="box">
+                <h3>対数をとる</h3>
+                <div class="formula">
+                    log p(x|μ, σ) = log(1/√(2πσ²)) + log(exp(-(x-μ)²/(2σ²)))
+                </div>
+                <div class="formula">
+                    = -1/2 log(2πσ²) - (x-μ)²/(2σ²)
+                </div>
+                <div class="formula">
+                    = -log σ - 1/2 log(2π) - (x-μ)²/(2σ²)
+                </div>
+            </div>
+            <div class="box" style="border-left-color: #667eea;">
+                <h3>ポイント</h3>
+                <ul>
+                    <li>log をとると計算が簡単になる</li>
+                    <li>定数項 -1/2 log(2π) は後で消える</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- スライド35: 演習の解答（2） -->
+        <div class="slide">
+            <h2>✅ 演習の解答（2）- Fisher情報の計算</h2>
+            <div class="box">
+                <h3>偏微分の計算</h3>
+                <div class="formula">
+                    ∂log p/∂μ = (x-μ)/σ²
+                </div>
+                <div class="formula">
+                    ∂log p/∂σ = -1/σ + (x-μ)²/σ³
+                </div>
+            </div>
+            <div class="box">
+                <h3>Fisher情報の計算</h3>
+                <div class="formula">
+                    I<sub>μμ</sub> = E[(∂log p/∂μ)²] = E[(x-μ)²/σ⁴] = σ²/σ⁴ = 1/σ²
+                </div>
+                <div class="formula">
+                    I<sub>σσ</sub> = E[(∂log p/∂σ)²] = ... = 2/σ²
+                </div>
+                <div class="formula">
+                    I<sub>μσ</sub> = E[(∂log p/∂μ)(∂log p/∂σ)] = 0
+                </div>
+            </div>
+            <div class="box" style="background: linear-gradient(120deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h3>最終結果</h3>
+                <div class="formula" style="background: rgba(255,255,255,0.2); color: white;">
+                    I(μ, σ) = [1/σ²    0   ]<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0      2/σ²]
+                </div>
+            </div>
+        </div>
+        
+        <!-- スライド36: 可視化デモ -->
+        <div class="slide">
+            <h2>📊 可視化デモ</h2>
+            <div class="box">
+                <h3>Jupyter Notebook デモ（時間があれば）</h3>
+                <ul>
+                    <li>正規分布族のFisher計量を可視化</li>
+                    <li>(μ, σ) 空間での「距離」を計算</li>
+                    <li>測地線を可視化</li>
+                </ul>
+            </div>
+            <svg width="100%" height="340" viewBox="0 0 540 340">
+                <text x="270" y="25" text-anchor="middle" font-size="16" font-weight="bold">(μ, σ) 空間でのFisher計量</text>
+                <rect x="70" y="50" width="200" height="250" fill="url(#grid)" stroke="#2c3e50" stroke-width="2"/>
+                <text x="170" y="315" text-anchor="middle" font-size="12">μ</text>
+                <text x="50" y="175" text-anchor="middle" font-size="12">σ</text>
+                <path d="M 100 180 Q 140 120 180 180" stroke="#667eea" stroke-width="3" fill="none"/>
+                <circle cx="100" cy="180" r="5" fill="#e74c3c"/>
+                <circle cx="180" cy="180" r="5" fill="#e74c3c"/>
+                <text x="140" y="110" text-anchor="middle" font-size="11" fill="#667eea">測地線</text>
+                <g transform="translate(310, 150)">
+                    <text x="0" y="-20" font-size="13" font-weight="bold">Fisher計量の成分</text>
+                    <rect x="0" y="0" width="180" height="25" fill="#667eea" opacity="0.6"/>
+                    <text x="90" y="17" text-anchor="middle" fill="white" font-size="12">I_μμ = 1/σ²</text>
+                    <rect x="0" y="35" width="180" height="25" fill="#764ba2" opacity="0.6"/>
+                    <text x="90" y="52" text-anchor="middle" fill="white" font-size="12">I_σσ = 2/σ²</text>
+                    <rect x="0" y="70" width="180" height="25" fill="#ecf0f1"/>
+                    <text x="90" y="87" text-anchor="middle" font-size="12">I_μσ = 0</text>
+                    <text x="90" y="125" text-anchor="middle" font-size="11" fill="#7f8c8d">σが小さいほど</text>
+                    <text x="90" y="140" text-anchor="middle" font-size="11" fill="#7f8c8d">Fisher情報が大きい</text>
+                </g>
+            </svg>
+            <p style="text-align: center; margin-top: 15px; color: #667eea; font-weight: bold;">
+                コードは配布資料に含まれます - 次回までに自分で実行してみてください
+            </p>
+        </div>
+        
+        <!-- スライド37: 今日のまとめ -->
+        <div class="slide">
+            <h2>📝 今日のまとめ</h2>
+            <div class="box">
+                <h3>学んだこと</h3>
+                <ul>
+                    <li><strong>①多様体：</strong>確率分布を「曲がった空間」として扱う</li>
+                    <li><strong>②Fisher情報計量：</strong>分布の区別しやすさを表現する「自然な計量」</li>
+                    <li><strong>③測地線：</strong>多様体上での「最短経路」、自然勾配との関係</li>
+                </ul>
+            </div>
+            <div class="flow-diagram">
+                <div class="flow-step" style="border-left-color: #667eea;">
+                    <p><strong>多様体</strong></p>
+                    <p style="font-size: 0.85em;">確率分布の空間</p>
+                </div>
+                <div class="arrow-right">→</div>
+                <div class="flow-step" style="border-left-color: #764ba2;">
+                    <p><strong>Fisher計量</strong></p>
+                    <p style="font-size: 0.85em;">真の距離</p>
+                </div>
+                <div class="arrow-right">→</div>
+                <div class="flow-step" style="border-left-color: #f39c12;">
+                    <p><strong>測地線</strong></p>
+                    <p style="font-size: 0.85em;">最短経路</p>
+                </div>
+            </div>
+            <div class="box" style="border-left-color: #e74c3c; margin-top: 25px;">
+                <h3>重要ポイント</h3>
+                <ul>
+                    <li>Fisher計量は統計的推定理論と幾何学の架け橋</li>
+                    <li>創造過程の数理化に必須の道具</li>
+                    <li>自然勾配 = 測地線方向への最適化</li>
+                </ul>
+            </div>
+            <p style="text-align: center; margin-top: 25px; font-size: 1.2em; color: #667eea; font-weight: bold;">
+                今日の内容を自分の言葉で説明できますか？
+            </p>
+        </div>
+        
+        <!-- スライド38: 次回予告と宿題 -->
+        <div class="slide">
+            <h2>🎯 次回予告と宿題</h2>
+            <div class="box">
+                <h3>次回（第2回）のテーマ</h3>
+                <p class="emphasis">「創造過程の情報幾何学的定式化 - 発散・収束・結晶化を数式で表す」</p>
+                <ul>
+                    <li>國藤モデルの3段階（発散・収束・結晶化）</li>
+                    <li>各段階の数学的定式化</li>
+                    <li>FEP・WBA・Creative Processの統合</li>
+                </ul>
+            </div>
+            <div class="box" style="border-left-color: #764ba2;">
+                <h3>宿題（任意）</h3>
+                <ul>
+                    <li>✏️ 今日の演習をJupyter Notebookで再現</li>
+                    <li>🎯 ポアソン分布のFisher情報を計算（挑戦課題）</li>
+                    <li>📖 参考資料（文書3, 4）を読む</li>
+                </ul>
+            </div>
+            <div style="text-align: center; margin-top: 40px;">
+                <h2 style="color: #667eea;">お疲れ様でした！</h2>
+                <p style="font-size: 1.2em; margin-top: 18px;">質問があればいつでもどうぞ</p>
+            </div>
+        </div>
+        
+    </div>
+    
+    <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1002; display: flex; gap: 15px;">
+        <a href="index.html" style="background: #667eea; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">目次</a>
+        <a href="shin_dai2kai_zenhan.html" style="background: white; color: #2c3e50; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.2);">次 →</a>
+    </div>
+    
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← 前へ</button>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">次へ →</button>
+    </div>
+    
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('totalSlides').textContent = totalSlides;
+        
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('currentSlide').textContent = currentSlide + 1;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+            initSlide();
+        }
+        
+        function changeSlide(dir) { showSlide(currentSlide + dir); }
+        document.addEventListener('keydown', e => { if(e.key==='ArrowLeft') changeSlide(-1); if(e.key==='ArrowRight') changeSlide(1); });
+        
+        function drawNormal() {
+            const c = document.getElementById('normalCanvas');
+            if (!c) return;
+            const ctx = c.getContext('2d');
+            const mu = parseFloat(document.getElementById('muSlide').value);
+            const sig = parseFloat(document.getElementById('sigSlide').value);
+            document.getElementById('muVal').textContent = mu.toFixed(1);
+            document.getElementById('sigVal').textContent = sig.toFixed(1);
+            ctx.clearRect(0, 0, c.width, c.height);
+            ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(50, 280); ctx.lineTo(850, 280); ctx.stroke();
+            ctx.strokeStyle = '#667eea'; ctx.lineWidth = 3; ctx.beginPath();
+            const scale = 80; const xOff = 450;
+            for (let x = -6; x <= 6; x += 0.01) {
+                const rx = x * scale + xOff;
+                const y = (1 / (sig * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mu) / sig, 2));
+                const ry = 280 - y * 200;
+                if (x === -6) ctx.moveTo(rx, ry); else ctx.lineTo(rx, ry);
+            }
+            ctx.stroke();
+            ctx.fillStyle = '#2c3e50'; ctx.font = '18px Arial';
+            ctx.fillText(`N(μ=${mu.toFixed(1)}, σ²=${(sig**2).toFixed(2)})`, 50, 40);
+        }
+        
+        function drawNormal1D() {
+            const c = document.getElementById('normal1d');
+            if (!c) return;
+            const ctx = c.getContext('2d');
+            const sig = parseFloat(document.getElementById('sig1dSlide').value);
+            document.getElementById('sig1dVal').textContent = sig.toFixed(1);
+            ctx.clearRect(0, 0, c.width, c.height);
+            ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(50, 250); ctx.lineTo(850, 250); ctx.stroke();
+            ctx.strokeStyle = '#764ba2'; ctx.lineWidth = 3; ctx.beginPath();
+            const scale = 80; const xOff = 450;
+            for (let x = -5; x <= 5; x += 0.01) {
+                const rx = x * scale + xOff;
+                const y = (1 / (sig * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow(x / sig, 2));
+                const ry = 250 - y * 180;
+                if (x === -5) ctx.moveTo(rx, ry); else ctx.lineTo(rx, ry);
+            }
+            ctx.stroke();
+            ctx.fillStyle = '#2c3e50'; ctx.font = '18px Arial';
+            ctx.fillText(`N(0, σ²=${(sig**2).toFixed(2)})`, 50, 35);
+        }
+        
+        function initSlide() {
+            if (currentSlide === 4) {
+                setTimeout(drawNormal, 100);
+                const mu = document.getElementById('muSlide');
+                const sig = document.getElementById('sigSlide');
+                if (mu) { mu.removeEventListener('input', drawNormal); mu.addEventListener('input', drawNormal); }
+                if (sig) { sig.removeEventListener('input', drawNormal); sig.addEventListener('input', drawNormal); }
+            }
+            if (currentSlide === 14) {
+                setTimeout(drawNormal1D, 100);
+                const s1d = document.getElementById('sig1dSlide');
+                if (s1d) { s1d.removeEventListener('input', drawNormal1D); s1d.addEventListener('input', drawNormal1D); }
+            }
+        }
+        
+        showSlide(0);
+    </script>
+</body>
+</html>

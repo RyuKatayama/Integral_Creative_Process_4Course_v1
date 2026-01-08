@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情報幾何学による創造過程の数理 - 全4回カリキュラム</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Yu Gothic', 'Meiryo', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 20px; 
+            padding: 60px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { 
+            font-size: 2.5em; 
+            color: #2c3e50; 
+            text-align: center; 
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+        .subtitle { 
+            font-size: 1.3em; 
+            color: #7f8c8d; 
+            text-align: center; 
+            margin-bottom: 50px; 
+        }
+        .intro { 
+            background: #f8f9fa; 
+            padding: 30px; 
+            border-radius: 15px; 
+            margin-bottom: 50px;
+            border-left: 5px solid #667eea;
+        }
+        .intro h2 { 
+            color: #667eea; 
+            font-size: 1.8em; 
+            margin-bottom: 20px; 
+        }
+        .intro p { 
+            font-size: 1.1em; 
+            line-height: 1.8; 
+            color: #34495e; 
+            margin-bottom: 15px;
+        }
+        .session-grid { 
+            display: grid; 
+            gap: 30px; 
+            margin-bottom: 50px;
+        }
+        .session-card { 
+            background: white; 
+            border-radius: 15px; 
+            padding: 35px; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-top: 5px solid #667eea;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .session-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .session-card.session-1 { border-top-color: #667eea; }
+        .session-card.session-2 { border-top-color: #764ba2; }
+        .session-card.session-3 { border-top-color: #f39c12; }
+        .session-card.session-4 { border-top-color: #27ae60; }
+        .session-header { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 20px;
+        }
+        .session-number { 
+            font-size: 3em; 
+            font-weight: bold; 
+            color: #ecf0f1; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            width: 80px; 
+            height: 80px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            margin-right: 25px;
+            flex-shrink: 0;
+        }
+        .session-number.num-2 { background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); }
+        .session-number.num-3 { background: linear-gradient(135deg, #f39c12 0%, #e74c3c 100%); }
+        .session-number.num-4 { background: linear-gradient(135deg, #27ae60 0%, #2980b9 100%); }
+        .session-title { 
+            font-size: 1.8em; 
+            color: #2c3e50; 
+            line-height: 1.3;
+        }
+        .session-subtitle { 
+            font-size: 1.1em; 
+            color: #7f8c8d; 
+            margin-top: 5px;
+        }
+        .session-description { 
+            font-size: 1.05em; 
+            line-height: 1.7; 
+            color: #34495e; 
+            margin-bottom: 25px;
+        }
+        .session-topics { 
+            background: #f8f9fa; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-bottom: 25px;
+        }
+        .session-topics h4 { 
+            color: #2c3e50; 
+            font-size: 1.2em; 
+            margin-bottom: 12px;
+        }
+        .session-topics ul { 
+            list-style: none; 
+            padding-left: 0;
+        }
+        .session-topics li { 
+            padding: 8px 0; 
+            color: #34495e; 
+            font-size: 1.05em;
+            position: relative;
+            padding-left: 25px;
+        }
+        .session-topics li:before { 
+            content: "▹"; 
+            position: absolute; 
+            left: 0; 
+            color: #667eea; 
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+        .links-container { 
+            display: flex; 
+            gap: 15px; 
+            flex-wrap: wrap;
+        }
+        .link-button { 
+            flex: 1;
+            min-width: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            text-decoration: none; 
+            padding: 15px 25px; 
+            border-radius: 10px; 
+            font-size: 1.05em; 
+            font-weight: bold;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .link-button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        .link-button.part-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .link-button.part-2 { background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); }
+        .single-link { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            text-decoration: none; 
+            padding: 15px 30px; 
+            border-radius: 10px; 
+            font-size: 1.1em; 
+            font-weight: bold;
+            display: inline-block;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .single-link:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 60px; 
+            padding-top: 30px; 
+            border-top: 2px solid #ecf0f1;
+            color: #7f8c8d;
+        }
+        .footer p { 
+            font-size: 1.1em; 
+            margin-bottom: 10px;
+        }
+        @media (max-width: 768px) {
+            .container { padding: 30px 20px; }
+            h1 { font-size: 1.8em; }
+            .subtitle { font-size: 1.1em; }
+            .session-header { flex-direction: column; text-align: center; }
+            .session-number { margin-right: 0; margin-bottom: 15px; }
+            .links-container { flex-direction: column; }
+            .link-button { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>情報幾何学による創造過程の数理</h1>
+        <div class="subtitle">DTU Vietnam カリキュラム - 全4回</div>
+        
+        <div class="intro">
+            <h2>📚 カリキュラム概要</h2>
+            <p>
+                このカリキュラムでは、情報幾何学の基礎から創造過程の数理的モデル化、そして実装まで、体系的に学びます。
+                國藤進の3段階モデル（発散・収束・結晶化）を数学的に定式化し、Free Energy Principle (FEP)、
+                Whole Brain Architecture (WBA)、Creative Processの3理論が統一方程式で統合されることを示します。
+            </p>
+            <p>
+                最終回では、Python実装を通じて理論を実践に移し、各自のプロジェクトに応用できる力を養います。
+            </p>
+        </div>
+        
+        <div class="session-grid">
+            
+            <!-- 第1回 -->
+            <div class="session-card session-1">
+                <div class="session-header">
+                    <div class="session-number">1</div>
+                    <div>
+                        <div class="session-title">情報幾何学の基礎</div>
+                        <div class="session-subtitle">多様体・Fisher計量・測地線</div>
+                    </div>
+                </div>
+                <p class="session-description">
+                    情報幾何学の基本概念を学びます。確率分布を点として扱う多様体の考え方、分布間の真の距離を測るFisher計量、
+                    そして最短経路である測地線について理解します。
+                </p>
+                <div class="session-topics">
+                    <h4>主要トピック</h4>
+                    <ul>
+                        <li>多様体の基本概念</li>
+                        <li>Fisher情報計量</li>
+                        <li>測地線と最短経路</li>
+                        <li>情報幾何学の応用例</li>
+                    </ul>
+                </div>
+                <a href="shin_dai1kai.html" class="single-link">第1回を開く →</a>
+            </div>
+            
+            <!-- 第2回 -->
+            <div class="session-card session-2">
+                <div class="session-header">
+                    <div class="session-number num-2">2</div>
+                    <div>
+                        <div class="session-title">創造過程の理論的基礎</div>
+                        <div class="session-subtitle">國藤モデルと発散段階の数理</div>
+                    </div>
+                </div>
+                <p class="session-description">
+                    國藤進の3段階モデル（発散・収束・結晶化）を紹介し、特に発散段階をエントロピー最大化として数理的に定式化します。
+                    KJ法やブレインストーミングとの対応も学びます。
+                </p>
+                <div class="session-topics">
+                    <h4>主要トピック</h4>
+                    <ul>
+                        <li>國藤進の3段階モデル</li>
+                        <li>発散段階とエントロピー最大化</li>
+                        <li>ランダムウォークとβパラメータ</li>
+                        <li>KJ法・ブレインストーミングの数理</li>
+                    </ul>
+                </div>
+                <div class="links-container">
+                    <a href="shin_dai2kai_zenhan.html" class="link-button part-1">前半（1-11）→</a>
+                    <a href="shin_dai2kai_kouhan.html" class="link-button part-2">後半（12-22）→</a>
+                </div>
+            </div>
+            
+            <!-- 第3回 -->
+            <div class="session-card session-3">
+                <div class="session-header">
+                    <div class="session-number num-3">3</div>
+                    <div>
+                        <div class="session-title">創造過程の収束と結晶化</div>
+                        <div class="session-subtitle">自然勾配・相転移・3理論の統合</div>
+                    </div>
+                </div>
+                <p class="session-description">
+                    収束段階を自然勾配降下法として、結晶化段階を相転移現象として定式化します。
+                    そして、FEP・WBA・Creative Processの3理論が統一方程式で統合されることを示します。
+                </p>
+                <div class="session-topics">
+                    <h4>主要トピック</h4>
+                    <ul>
+                        <li>自然勾配降下法（測地線探索）</li>
+                        <li>相転移現象と対称性の破れ</li>
+                        <li>統一方程式の導出</li>
+                        <li>FEP・WBA・Creative Processの統合</li>
+                        <li>M⁶⁵理論への接続</li>
+                    </ul>
+                </div>
+                <div class="links-container">
+                    <a href="shin_dai3kai_zenhan.html" class="link-button part-1">前半（1-12）→</a>
+                    <a href="shin_dai3kai_kouhan.html" class="link-button part-2">後半（13-24）→</a>
+                </div>
+            </div>
+            
+            <!-- 第4回 -->
+            <div class="session-card session-4">
+                <div class="session-header">
+                    <div class="session-number num-4">4</div>
+                    <div>
+                        <div class="session-title">実装の基本とプロジェクト設計</div>
+                        <div class="session-subtitle">理論から実装へ - Python実装とプロジェクト設計</div>
+                    </div>
+                </div>
+                <p class="session-description">
+                    これまで学んだ理論をPythonで実装します。Fisher計量の計算、自然勾配降下法、統一方程式のシミュレーションを行い、
+                    各自のプロジェクトに応用する方法を学びます。
+                </p>
+                <div class="session-topics">
+                    <h4>主要トピック</h4>
+                    <ul>
+                        <li>Python環境のセットアップ</li>
+                        <li>Fisher計量の実装</li>
+                        <li>自然勾配降下法の実装</li>
+                        <li>統一方程式のシミュレーション</li>
+                        <li>個人プロジェクト設計</li>
+                    </ul>
+                </div>
+                <div class="links-container">
+                    <a href="shin_dai4kai_zenhan.html" class="link-button part-1">前半（1-13）→</a>
+                    <a href="shin_dai4kai_kouhan.html" class="link-button part-2">後半（14-26）→</a>
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="footer">
+            <p><strong>講師：</strong>片山 立（Ryu Katayama, Ph.D.）</p>
+            <p>夢・アーキテクティング工房 | 公共貨幣フォーラム 理事</p>
+            <p style="margin-top: 20px; font-size: 0.95em;">2026年1月 | DTU Vietnam</p>
+        </div>
+    </div>
+</body>
+</html>
